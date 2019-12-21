@@ -1668,8 +1668,18 @@ This module requires the libgsl library to be installed. Please follow the instr
 =head2 Debian Linux
 
 =begin code
-sudo apt-get install libgsl23
+sudo apt install libgsl23
 =end code
+
+That command will install libgslcblas0 as well, since it's used by the GSL.
+
+=head2 Ubuntu 18.04
+
+libgsl23 and libgslcblas0 have a missing symbol on Ubuntu 18.04.
+I solved the issue installing the Debian Buster version of those two libraries:
+
+L<http://http.us.debian.org/debian/pool/main/g/gsl/libgslcblas0_2.5+dfsg-6_amd64.deb>
+L<http://http.us.debian.org/debian/pool/main/g/gsl/libgsl23_2.5+dfsg-6_amd64.deb>
 
 =head1 Installation
 
