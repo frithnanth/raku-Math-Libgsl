@@ -4,7 +4,7 @@
     "Fernando Santagata"
   ],
   "build-depends" : [ ],
-  "depends" : [ ],
+  "depends" : [ "NativeHelpers::Blob" ],
   "description" : "An interface to libgsl, the Gnu Scientific Library.",
   "license" : "Artistic-2.0",
   "name" : "Math::Libgsl",
