@@ -25,3 +25,5 @@ subtest {
 
 ok fcmp(log1p(.01),  .009950330853168, 10⁻¹⁴) == True, 'fcmp ok';
 ok fcmp(log1p(.01), .009950330853168, 10⁻¹⁵) == False, 'fcmp not ok';
+
+done-testing;
