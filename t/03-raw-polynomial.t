@@ -14,10 +14,8 @@ subtest {
   is-deeply $res.list, (321e0, 62e0, 6e0), 'evaluate real polynomial and its derivatives for real x';
 }, 'raw - evaluate real polynomial';
 
+# TODO
 #subtest {
-#  my $c = CArray[num64].new: (1, 2, 3)».Num;
-#  my gsl_complex $z .= new(:re(1e0), :im(1e0));
-#  my gsl_complex $ret = gsl_poly_complex_eval($c, $c.elems, $z);
 #}, 'raw - evaluate complex polynomial';
 
 subtest {
