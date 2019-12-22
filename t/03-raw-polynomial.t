@@ -95,7 +95,9 @@ subtest {
   my $a = CArray[num64].new: (-1, 0, 0, 0, 0, 1)».Num;
   my $z = CArray[num64].allocate(($a.elems - 1) * 2);
   my gsl_poly_complex_workspace $w = gsl_poly_complex_workspace_alloc($a.elems);
+  isa-ok $w, gsl_poly_complex_workspace, 'allocate workspace';
   my $ret = gsl_poly_complex_solve($a, $a.elems, $w, $z);
+  lives-ok { gsl_poly_complex_workspace_free($w) }, 'free workspace';
   ok $ret == 0, 'no error reported';
   is-deeply $z.list».round(10⁻¹⁴),
     (-0.8090169943749477,  0.5877852522924734,
