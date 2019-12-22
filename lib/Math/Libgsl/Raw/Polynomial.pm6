@@ -24,7 +24,7 @@ sub gsl_poly_complex_solve_quadratic(num64 $a, num64 $b, num64 $c, gsl_complex $
 sub gsl_poly_solve_cubic(num64 $a, num64 $b, num64 $c, num64 $x0 is rw, num64 $x1 is rw, num64 $x2 is rw --> int32) is native(LIB) is export(:cubic) { * }
 sub gsl_poly_complex_solve_cubic(num64 $a, num64 $b, num64 $c, gsl_complex $z0 is rw, gsl_complex $z1, gsl_complex $z2 is rw --> int32) is native(LIB) is export(:cubic) { * }
 # General polynomial equations
-class gsl_poly_complex_workspace is repr('CStruct') is export {
+class gsl_poly_complex_workspace is repr('CStruct') is export(:complexsolve) {
   has size_t  $.nc;
   has Pointer $.matrix;
 }
