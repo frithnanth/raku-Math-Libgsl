@@ -1,6 +1,6 @@
 use v6;
 
-class X::Libgssl is Exception
+class X::Libgsl is Exception
 {
   has Int $.errno;
   has Str $.error;
