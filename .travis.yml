@@ -13,4 +13,4 @@ before_install:
 install:
   - zef install --deps-only --/test .
 script:
-  - PERL6LIB=$PWD/lib prove -e perl6 -vr t/
+  - PERL6LIB=$PWD/lib prove -e perl6 -vr t/*.rakutest
