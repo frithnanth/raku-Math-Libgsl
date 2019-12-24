@@ -1,0 +1,71 @@
+#!/usr/bin/env perl6
+
+use Test;
+use lib 'lib';
+use Math::Libgsl::Permutation;
+use Math::Libgsl::Exception;
+use Math::Libgsl::Constants;
+
+my Math::Libgsl::Permutation $p .= new(:elems(10));
+isa-ok $p, Math::Libgsl::Permutation;
+ok $p.get(9) == 9, 'get an element';
+throws-like { $p.get(10) }, X::Libgsl, message => /'out of range'/, 'fails if requested element is out of range';
+lives-ok { $p.swap(9, 8) }, "swap lives";
+ok $p.get(9) == 8, 'elements swapped';
+throws-like { $p.swap(9, 10) }, X::Libgsl, message => /'out of range'/, 'fails if one element is out of range';
+ok $p.size() == 10, 'permutation size';
+ok $p.is-valid, 'valid permutation';
+lives-ok { $p.reverse }, 'reverse permutation lives';
+is-deeply $p.all, (8, 9, 7, 6, 5, 4, 3, 2, 1, 0), 'reversed data ok';
+my Math::Libgsl::Permutation $p1 .= new(:elems(10));
+lives-ok { $p1.copy($p) }, 'permutation copy returns ok';
+is-deeply $p1.all, (8, 9, 7, 6, 5, 4, 3, 2, 1, 0), 'copied data ok';
+lives-ok { $p1.init }, 'init returns ok';
+is-deeply $p1.all, (^10).list, 'init data ok';
+lives-ok { $p.inverse($p1) }, 'inverse permutation lives';
+is-deeply $p1.all, (9, 8, 7, 6, 5, 4, 3, 2, 0, 1), 'inverted data ok';
+
+subtest {
+  my Math::Libgsl::Permutation $p .= new(:elems(5));
+  lives-ok { $p.next }, 'can get next permutation';
+  is-deeply $p.all, (0, 1, 2, 4, 3), 'next permutation ok';
+  lives-ok { $p.prev }, 'can get previous permutation';
+  is-deeply $p.all, (0, 1, 2, 3, 4), 'previous permutation ok';
+  $p.init;
+  nok $p.bprev, 'bprev returns False when there is no previous permutation';
+  while $p.bnext {}
+  nok $p.bnext, 'bnext returns False at end of available permutations';
+}, 'next & prev';
+
+ok Math::Libgsl::Permutation.new(:elems(10)).reverse.get(9) == 0, 'operation chaining';
+my @data = 100..109;
+is-deeply $p.permute(@data, 1),
+  (108e0, 109e0, 107e0, 106e0, 105e0, 104e0, 103e0, 102e0, 101e0, 100e0), 'permute an array';
+@data = 100..109;
+is-deeply $p.permute-inverse(@data, 1),
+  (109e0, 108e0, 107e0, 106e0, 105e0, 104e0, 103e0, 102e0, 100e0, 101e0), 'permute-inverse an array';
+
+subtest {
+  my Math::Libgsl::Permutation $p1  .= new(:elems(5));
+  my Math::Libgsl::Permutation $p2  .= new(:elems(5));
+  my Math::Libgsl::Permutation $res .= new(:elems(5));
+  $p1.next;
+  $p2.next;
+  $p2.next;
+  $p1.multiply($res, $p2);
+  is-deeply $res.all, (0, 1, 3, 4, 2), 'multiply two permutations';
+}, 'multiplication';
+
+subtest {
+  my Math::Libgsl::Permutation $p1  .= new(:elems(5));
+  my Math::Libgsl::Permutation $res .= new(:elems(5));
+  lives-ok { $p1.to-canonical($res) }, 'linear to canonical';
+  is-deeply $res.all, (4, 3, 2, 1, 0), 'canonical data';
+  lives-ok { $res.to-linear($p1) }, 'canonical to linear';
+  is-deeply $p1.all, (0, 1, 2, 3, 4), 'linear data';
+  ok $res.inversions == 10, 'number of inversions';
+  ok $p1.linear-cycles == 5, 'count linear cycles';
+  ok $p1.canonical-cycles == 1, 'count canonical cycles';
+}, 'cyclic form';
+
+done-testing;
