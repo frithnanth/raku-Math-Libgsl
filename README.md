@@ -14,10 +14,10 @@ This is what's presently available as Raku subs:
 
 <table class="pod-table">
 <thead><tr>
-<th>C function group</th> <th>Raku subs provided</th>
+<th>C function group</th> <th>Interface subs provided</th> <th>Raku subs or methods</th>
 </tr></thead>
 <tbody>
-<tr> <td>Mathematical functions</td> <td>23</td> </tr> <tr> <td>Polynomials</td> <td>10</td> </tr> <tr> <td>Special functions</td> <td>515</td> </tr>
+<tr> <td>Mathematical functions</td> <td>23</td> <td>20</td> </tr> <tr> <td>Polynomials</td> <td>15</td> <td>10</td> </tr> <tr> <td>Special functions</td> <td>519</td> <td>515</td> </tr> <tr> <td>Permutations</td> <td>58</td> <td>23</td> </tr>
 </tbody>
 </table>
 
@@ -28,12 +28,14 @@ SYNOPSIS
 use Math::Libgsl::Raw::Elementary :ALL;
 use Math::Libgsl::Raw::Polynomial :ALL;
 use Math::Libgsl::Raw::Function :ALL;
+use Math::Libgsl::Raw::Permutation :ALL;
 
 use Math::Libgsl::Constants;
 use Math::Libgsl::Exception;
 use Math::Libgsl::Elementary :ALL;
 use Math::Libgsl::Polynomial :ALL;
 use Math::Libgsl::Function :ALL;
+use Math::Libgsl::Permutation;
 ```
 
 DESCRIPTION
@@ -1153,7 +1155,7 @@ These routines compute the regulated Gamma Function Γ*(x).
 
 These routines compute the reciprocal of the gamma function, 1/Γ(x) using the real Lanczos method.
 
-### sub lngamma-complex-e(Num(Cool) $zr where { $_ > 0 || ($_ < 0 && $_ ≠ $_.Int) }, Num(Cool) $zi where { $_ > 0 || ($_ < 0 && $_ ≠ $_.Int) } --> List) is export(:gammabeta)
+### sub lngamma-complex-e(Num(Cool) $zr where { $\_ > 0 || ($\_ < 0 && $\_ ≠ $\_.Int) }, Num(Cool) $zi where { $\_ > 0 || ($\_ < 0 && $\_ ≠ $\_.Int) } --> List) is export(:gammabeta)
 
 This routine computes log(Γ(z)) for complex z = zᵣ + izᵢ. The returned parameters are lnr = log |Γ(z)|, its error, arg = arg(Γ(z)) in (−π, π], and its error.
 
@@ -1735,19 +1737,19 @@ These routines compute the power xⁿ for integer n.
 
 ### sub psi-int-e(UInt $n where * > 0 --> List) is export(:psi)
 
-These routines compute the digamma function ψ(n) for positive integer n.
+These routines compute the Digamma function ψ(n) for positive integer n.
 
 ### sub psi(Num(Cool) $x where * ≠ 0 --> Num) is export(:psi)
 
 ### sub psi-e(Num(Cool) $x where * ≠ 0 --> List) is export(:psi)
 
-These routines compute the digamma function ψ(x) for general x.
+These routines compute the Digamma function ψ(x) for general x.
 
 ### sub psi1piy(Num(Cool) $y --> Num) is export(:psi)
 
 ### sub psi1piy-e(Num(Cool) $y --> List) is export(:psi)
 
-These routines compute the real part of the digamma function on the line 1 + iy.
+These routines compute the real part of the Digamma function on the line 1 + iy.
 
 ### sub psi1-int(UInt $n where * > 0 --> Num) is export(:psi)
 
@@ -1903,11 +1905,11 @@ These routines compute ζ(n) − 1 for integer n.
 
 These routines compute ζ(s) − 1 for arbitrary s.
 
-### sub hzeta(Num(Cool) $s where * > 1, Num(Cool) $q where * > 0 --> Num) is export(:zeta)
+### sub hzeta(Num(Cool) $t where * > 1, Num(Cool) $q where * > 0 --> Num) is export(:zeta)
 
-### sub hzeta-e(Num(Cool) $s where * > 1, Num(Cool) $q where * > 0 --> List) is export(:zeta)
+### sub hzeta-e(Num(Cool) $t where * > 1, Num(Cool) $q where * > 0 --> List) is export(:zeta)
 
-These routines compute the Hurwitz zeta function ζ(s, q).
+These routines compute the Hurwitz zeta function ζ(t, q).
 
 ### sub eta-int(Int $n --> Num) is export(:zeta)
 
@@ -1920,6 +1922,93 @@ These routines compute the eta function η(n) for integer n.
 ### sub eta-e(Num(Cool) $s --> List) is export(:zeta)
 
 These routines compute the eta function η(s) for arbitrary s.
+
+Math::Libgsl::Permutation
+-------------------------
+
+### new(:$elems!)
+
+The constructor accepts one parameter: the number of elements in the permutation. The permutation object is already initialized to the identity (0, 1, 2 … $elems - 1).
+
+### init()
+
+This method initialize the permutation object To the identity and returns **self**.
+
+### copy($src! where * ~~ Math::Libgsl::Permutation)
+
+This method copies the permutation **$src** into the current permutation object and returns **self**.
+
+### get(Int $elem! --> Int)
+
+This method returns the permutation value at position **$elem**.
+
+### all(--> Seq)
+
+This method returns a Seq of all elements of the current permutation.
+
+### swap(Int $elem1!, Int $elem2!)
+
+This method swamps two elements of the current permutation object and returns **self**.
+
+### size(--> Int)
+
+This method returns the size of the current permutation object.
+
+### is-valid(--> Bool)
+
+This method checks whether the current permutation is valid: the n elements should contain each of the numbers 0 to n - 1 once and only once.
+
+### reverse()
+
+This method reverses the order of the elements of the current permutation object.
+
+### inverse($dst! where * ~~ Math::Libgsl::Permutation)
+
+This method computes the inverse of the current permutation and stores the result into **$dst**.
+
+### next()
+
+### prev()
+
+These functions advance or step backwards the permutation p and return **self**, useful for method chaining.
+
+### bnext(--> Bool)
+
+### bprev(--> Bool)
+
+These functions advance or step backwards the permutation p and return a Bool: **True** if successful or **False** if there's no more permutation to produce.
+
+### permute(@data!, Int $stride! --> List)
+
+This method applies the current permutation to the **@data** array with stride **$stride**.
+
+### permute-inverse(@data!, Int $stride! --> List)
+
+This method applies the inverse of the current permutation to the **@data** array with stride **$stride**.
+
+### multiply($dst! where * ~~ Math::Libgsl::Permutation, $p2! where * ~~ Math::Libgsl::Permutation)
+
+This method combines the current permutation with the permutation **$p2**, stores the result into **$dst** and returns **self**.
+
+### to-canonical($dst! where * ~~ Math::Libgsl::Permutation)
+
+This method computes the canonical form of the current permutation, stores the result into **$dst** and returns **self**.
+
+### to-linear($dst! where * ~~ Math::Libgsl::Permutation)
+
+This method computes the linear form of the current permutation, stores the result into **$dst** and returns **self**.
+
+### inversions(--> Int)
+
+This method counts the number of inversions in the current permutation.
+
+### linear-cycles(--> Int)
+
+This method counts the number of cycles in the current permutation given in linear form.
+
+### canonical-cycles(--> Int)
+
+This method counts the number of cycles in the current permutation given in canonical form.
 
 C Library Documentation
 =======================
