@@ -3,7 +3,6 @@
 use Test;
 use lib 'lib';
 
-use-ok 'Math::Libgsl';
 use-ok 'Math::Libgsl::Constants';
 use-ok 'Math::Libgsl::Exception';
 
