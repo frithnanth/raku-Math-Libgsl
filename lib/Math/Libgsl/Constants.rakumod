@@ -1,6 +1,6 @@
 use v6.c;
 
-unit module Math::Libgsl::Constants:ver<0.0.1>:auth<cpan:FRITH>;
+unit module Math::Libgsl::Constants:ver<0.0.2>:auth<cpan:FRITH>;
 
 constant GSL_PREC_DOUBLE  is export = 0; # Accuracy ≅ 2 * 10⁻¹⁶
 constant GSL_PREC_SINGLE  is export = 1; # Accuracy ≅ 10⁻⁷

@@ -1,6 +1,8 @@
 Revision history for Math-Libgsl
 
 {{$NEXT}}
+
+0.0.2  2019-12-24T15:45:57+01:00
     - Add Permutation & switch to new Raku file naming scheme
 
 0.0.1  2019-12-21T14:57:12+01:00

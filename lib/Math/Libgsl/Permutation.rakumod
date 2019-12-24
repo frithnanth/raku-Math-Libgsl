@@ -1,6 +1,6 @@
 use v6.c;
 
-unit class Math::Libgsl::Permutation:ver<0.0.1>:auth<cpan:FRITH>;
+unit class Math::Libgsl::Permutation:ver<0.0.2>:auth<cpan:FRITH>;
 
 use Math::Libgsl::Raw::Permutation :ALL;
 use Math::Libgsl::Exception;

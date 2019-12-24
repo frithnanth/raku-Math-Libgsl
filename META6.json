@@ -14,10 +14,13 @@
     "Math::Libgsl::Elementary" : "lib/Math/Libgsl/Elementary.rakumod",
     "Math::Libgsl::Exception" : "lib/Math/Libgsl/Exception.rakumod",
     "Math::Libgsl::Function" : "lib/Math/Libgsl/Function.rakumod",
+    "Math::Libgsl::Permutation" : "lib/Math/Libgsl/Permutation.rakumod",
     "Math::Libgsl::Polynomial" : "lib/Math/Libgsl/Polynomial.rakumod",
     "Math::Libgsl::Raw::Complex" : "lib/Math/Libgsl/Raw/Complex.rakumod",
     "Math::Libgsl::Raw::Elementary" : "lib/Math/Libgsl/Raw/Elementary.rakumod",
     "Math::Libgsl::Raw::Function" : "lib/Math/Libgsl/Raw/Function.rakumod",
+    "Math::Libgsl::Raw::Matrix" : "lib/Math/Libgsl/Raw/Matrix.rakumod",
+    "Math::Libgsl::Raw::Permutation" : "lib/Math/Libgsl/Raw/Permutation.rakumod",
     "Math::Libgsl::Raw::Polynomial" : "lib/Math/Libgsl/Raw/Polynomial.rakumod"
   },
   "resources" : [ ],
@@ -27,5 +30,5 @@
     "nativecall"
   ],
   "test-depends" : [ ],
-  "version" : "0.0.1"
+  "version" : "0.0.2"
 }
