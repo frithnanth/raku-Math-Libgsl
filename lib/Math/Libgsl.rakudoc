@@ -1,6 +1,6 @@
 use v6.c;
 
-unit class Math::Libgsl:ver<0.0.1>:auth<cpan:FRITH>;
+unit package Math::Libgsl:ver<0.0.1>:auth<cpan:FRITH>;
 
 =begin pod
 
@@ -15,11 +15,12 @@ This is a work in progress. The GSL is huge and I will release early and release
 This is what's presently available as Raku subs:
 
 =begin table
-C function group       | Raku subs provided
-=============================================
-Mathematical functions |         23
-Polynomials            |         10
-Special functions      |        515
+C function group       | Interface subs provided | Raku subs or methods
+=======================================================================
+Mathematical functions |         23              |         20
+Polynomials            |         15              |         10
+Special functions      |        519              |        515
+Permutations           |         58              |         23
 =end table
 
 =head1 SYNOPSIS
@@ -29,12 +30,14 @@ Special functions      |        515
 use Math::Libgsl::Raw::Elementary :ALL;
 use Math::Libgsl::Raw::Polynomial :ALL;
 use Math::Libgsl::Raw::Function :ALL;
+use Math::Libgsl::Raw::Permutation :ALL;
 
 use Math::Libgsl::Constants;
 use Math::Libgsl::Exception;
 use Math::Libgsl::Elementary :ALL;
 use Math::Libgsl::Polynomial :ALL;
 use Math::Libgsl::Function :ALL;
+use Math::Libgsl::Permutation;
 
 =end code
 
@@ -1000,7 +1003,7 @@ These routines compute the regulated Gamma Function Γ*(x).
 
 These routines compute the reciprocal of the gamma function, 1/Γ(x) using the real Lanczos method.
 
-=head3 sub lngamma-complex-e(Num(Cool) $zr where { $_ > 0 || ($_ < 0 && $_ ≠ $_.Int) }, Num(Cool) $zi where { $_ > 0 || ($_ < 0 && $_ ≠ $_.Int) } --> List) is export(:gammabeta)
+=head3 sub lngamma-complex-e(Num(Cool) $zr where { $\_ > 0 || ($\_ < 0 && $\_ ≠ $\_.Int) }, Num(Cool) $zi where { $\_ > 0 || ($\_ < 0 && $\_ ≠ $\_.Int) } --> List) is export(:gammabeta)
 
 This routine computes log(Γ(z)) for complex z = zᵣ + izᵢ.
 The returned parameters are lnr = log |Γ(z)|, its error, arg = arg(Γ(z)) in (−π, π], and its error.
@@ -1496,17 +1499,17 @@ These routines compute the power xⁿ for integer n.
 =head3 sub psi-int(UInt $n where * > 0 --> Num) is export(:psi)
 =head3 sub psi-int-e(UInt $n where * > 0 --> List) is export(:psi)
 
-These routines compute the digamma function ψ(n) for positive integer n.
+These routines compute the Digamma function ψ(n) for positive integer n.
 
 =head3 sub psi(Num(Cool) $x where * ≠ 0 --> Num) is export(:psi)
 =head3 sub psi-e(Num(Cool) $x where * ≠ 0 --> List) is export(:psi)
 
-These routines compute the digamma function ψ(x) for general x.
+These routines compute the Digamma function ψ(x) for general x.
 
 =head3 sub psi1piy(Num(Cool) $y --> Num) is export(:psi)
 =head3 sub psi1piy-e(Num(Cool) $y --> List) is export(:psi)
 
-These routines compute the real part of the digamma function on the line 1 + iy.
+These routines compute the real part of the Digamma function on the line 1 + iy.
 
 =head3 sub psi1-int(UInt $n where * > 0 --> Num) is export(:psi)
 =head3 sub psi1-int-e(UInt $n where * > 0 --> List) is export(:psi)
@@ -1641,10 +1644,10 @@ These routines compute ζ(n) − 1 for integer n.
 
 These routines compute ζ(s) − 1 for arbitrary s.
 
-=head3 sub hzeta(Num(Cool) $s where * > 1, Num(Cool) $q where * > 0 --> Num) is export(:zeta)
-=head3 sub hzeta-e(Num(Cool) $s where * > 1, Num(Cool) $q where * > 0 --> List) is export(:zeta)
+=head3 sub hzeta(Num(Cool) $t where * > 1, Num(Cool) $q where * > 0 --> Num) is export(:zeta)
+=head3 sub hzeta-e(Num(Cool) $t where * > 1, Num(Cool) $q where * > 0 --> List) is export(:zeta)
 
-These routines compute the Hurwitz zeta function ζ(s, q).
+These routines compute the Hurwitz zeta function ζ(t, q).
 
 =head3 sub eta-int(Int $n --> Num) is export(:zeta)
 =head3 sub eta-int-e(Int $n --> List) is export(:zeta)
@@ -1655,6 +1658,91 @@ These routines compute the eta function η(n) for integer n.
 =head3 sub eta-e(Num(Cool) $s --> List) is export(:zeta)
 
 These routines compute the eta function η(s) for arbitrary s.
+
+=head2 Math::Libgsl::Permutation
+
+=head3 new(:$elems!)
+
+The constructor accepts one parameter: the number of elements in the permutation.
+The permutation object is already initialized to the identity (0, 1, 2 … $elems - 1).
+
+=head3 init()
+
+This method initialize the permutation object To the identity and returns B<self>.
+
+=head3 copy($src! where * ~~ Math::Libgsl::Permutation)
+
+This method copies the permutation B<$src> into the current permutation object and returns B<self>.
+
+=head3 get(Int $elem! --> Int)
+
+This method returns the permutation value at position B<$elem>.
+
+=head3 all(--> Seq)
+
+This method returns a Seq of all elements of the current permutation.
+
+=head3 swap(Int $elem1!, Int $elem2!)
+
+This method swamps two elements of the current permutation object and returns B<self>.
+
+=head3 size(--> Int)
+
+This method returns the size of the current permutation object.
+
+=head3 is-valid(--> Bool)
+
+This method checks whether the current permutation is valid: the n elements should contain each of the numbers 0 to n - 1 once and only once.
+
+=head3 reverse()
+
+This method reverses the order of the elements of the current permutation object.
+
+=head3 inverse($dst! where * ~~ Math::Libgsl::Permutation)
+
+This method computes the inverse of the current permutation and stores the result into B<$dst>.
+
+=head3 next()
+=head3 prev()
+
+These functions advance or step backwards the permutation p and return B<self>, useful for method chaining.
+
+=head3 bnext(--> Bool)
+=head3 bprev(--> Bool)
+
+These functions advance or step backwards the permutation p and return a Bool: B<True> if successful or B<False> if there's no more permutation to produce.
+
+=head3 permute(@data!, Int $stride! --> List)
+
+This method applies the current permutation to the B<@data> array with stride B<$stride>.
+
+=head3 permute-inverse(@data!, Int $stride! --> List)
+
+This method applies the inverse of the current permutation to the B<@data> array with stride B<$stride>.
+
+=head3 multiply($dst! where * ~~ Math::Libgsl::Permutation, $p2! where * ~~ Math::Libgsl::Permutation)
+
+This method combines the current permutation with the permutation B<$p2>, stores the result into B<$dst> and returns B<self>.
+
+=head3 to-canonical($dst! where * ~~ Math::Libgsl::Permutation)
+
+This method computes the canonical form of the current permutation, stores the result into B<$dst> and returns B<self>.
+
+=head3 to-linear($dst! where * ~~ Math::Libgsl::Permutation)
+
+This method computes the linear form of the current permutation, stores the result into B<$dst> and returns B<self>.
+
+=head3 inversions(--> Int)
+
+This method counts the number of inversions in the current permutation.
+
+=head3 linear-cycles(--> Int)
+
+This method counts the number of cycles in the current permutation given in linear form.
+
+=head3 canonical-cycles(--> Int)
+
+This method counts the number of cycles in the current permutation given in canonical form.
 
 =head1 C Library Documentation
 
