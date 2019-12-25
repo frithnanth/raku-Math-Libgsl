@@ -9,6 +9,10 @@ use NativeCall;
 
 has gsl_permutation $.p;
 
+multi method new(Int $elems!) { self.bless(:$elems) }
+
+multi method new(Int :$elems!) { self.bless(:$elems) }
+
 submethod BUILD(:$elems!) { $!p = gsl_permutation_calloc($elems) }
 
 submethod DESTROY { gsl_permutation_free($!p) }
