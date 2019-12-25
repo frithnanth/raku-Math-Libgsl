@@ -1,6 +1,6 @@
 use v6.c;
 
-unit module Math::Libgsl::Function:ver<0.0.2>:auth<cpan:FRITH>;
+unit module Math::Libgsl::Function:ver<0.0.3>:auth<cpan:FRITH>;
 
 use NativeCall;
 use Math::Libgsl::Raw::Function :ALL;
