@@ -4,7 +4,9 @@
     "Fernando Santagata"
   ],
   "build-depends" : [ ],
-  "depends" : [ ],
+  "depends" : [
+    "LibraryMake"
+  ],
   "description" : "An interface to libgsl, the Gnu Scientific Library.",
   "license" : "Artistic-2.0",
   "name" : "Math::Libgsl",
@@ -23,12 +25,14 @@
     "Math::Libgsl::Raw::Permutation" : "lib/Math/Libgsl/Raw/Permutation.rakumod",
     "Math::Libgsl::Raw::Polynomial" : "lib/Math/Libgsl/Raw/Polynomial.rakumod"
   },
-  "resources" : [ ],
+  "resources" : [
+    "libraries/gslhelper"
+  ],
   "source-url" : "git://github.com/frithnanth/perl6-Math-Libgsl.git",
   "tags" : [
     "math",
     "nativecall"
   ],
   "test-depends" : [ ],
-  "version" : "0.0.2"
+  "version" : "0.0.3"
 }

@@ -1,0 +1,21 @@
+SRC=src
+
+all : lib
+
+lib : resources/libraries/%LIB-NAME%
+
+# 'all', with compilation warnings
+debug :
+	%MAKE% "DBG=-Wall"  all
+
+resources/libraries/%LIB-NAME% : $(SRC)/complex%O% $(SRC)/polynomial%O%
+	%LD% %LDSHARED% %LDFLAGS% %LDOUT%resources/libraries/%LIB-NAME% $(SRC)/complex%O% $(SRC)/polynomial%O% %LIB-LDFLAGS%
+
+$(SRC)/complex%O% : $(SRC)/complex.c
+	%CC% -I $(SRC) -c %CCSHARED% %CCFLAGS% %CCOUT%$(SRC)/complex%O% $(SRC)/complex.c %LIB-CFLAGS% $(DBG)
+
+$(SRC)/polynomial%O% : $(SRC)/polynomial.c
+	%CC% -I $(SRC) -c %CCSHARED% %CCFLAGS% %CCOUT%$(SRC)/polynomial%O% $(SRC)/polynomial.c %LIB-CFLAGS% $(DBG)
+
+clean :
+	@rm -f $(SRC)/*%O% resources/libraries/*%LIB-NAME%

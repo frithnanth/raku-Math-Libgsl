@@ -1,6 +1,6 @@
 use v6.c;
 
-unit package Math::Libgsl:ver<0.0.1>:auth<cpan:FRITH>;
+unit package Math::Libgsl:ver<0.0.3>:auth<cpan:FRITH>;
 
 =begin pod
 
@@ -18,9 +18,10 @@ This is what's presently available as Raku subs:
 C function group       | Interface subs provided | Raku subs or methods
 =======================================================================
 Mathematical functions |         23              |         20
+Complex                |         61              |          -
 Polynomials            |         15              |         10
 Special functions      |        519              |        515
-Permutations           |         58              |         23
+Permutations           |         58              |         25
 =end table
 
 =head1 SYNOPSIS
@@ -28,6 +29,7 @@ Permutations           |         58              |         23
 =begin code :lang<perl6>
 
 use Math::Libgsl::Raw::Elementary :ALL;
+use Math::Libgsl::Raw::Complex :ALL;
 use Math::Libgsl::Raw::Polynomial :ALL;
 use Math::Libgsl::Raw::Function :ALL;
 use Math::Libgsl::Raw::Permutation :ALL;
@@ -50,7 +52,9 @@ This package provides both the low-level interface to the C library (Raw) and a 
 There are several groups of functions each coming with its own module.
 To avoid a massive pollution of the namespace each module exports groups of symbols using tags, so the programmer can choose what to import, or import all the tagged symbols using B<:ALL>.
 
-Math::Libgsl does nothing so far, it just contains the pod6 documentation.
+The base-name module Math::Libgsl contains the pod6 documentation. Use the module specific for your program instead.
+
+Math::Libgsl::Complex will not be implemented, because Raku's Complex datatype works fine. Its Raw counterpart, Math::Libgsl::Raw::Complex, is present because it's needed by other modules that rely on the GSL implementation of complex numbers.
 
 Math::Libgsl::Elementary makes these tags available:
 
@@ -1662,8 +1666,9 @@ These routines compute the eta function η(s) for arbitrary s.
 =head2 Math::Libgsl::Permutation
 
 =head3 new(:$elems!)
+=head3 new($elems!)
 
-The constructor accepts one parameter: the number of elements in the permutation.
+The constructor accepts one parameter: the number of elements in the permutation; it can be passed as a Pair or as a single value.
 The permutation object is already initialized to the identity (0, 1, 2 … $elems - 1).
 
 =head3 init()

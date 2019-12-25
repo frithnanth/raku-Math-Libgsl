@@ -1,16 +1,19 @@
 use v6.c;
 
-unit module Math::Libgsl::Raw::Polynomial:ver<0.0.2>:auth<cpan:FRITH>;
+unit module Math::Libgsl::Raw::Polynomial:ver<0.0.3>:auth<cpan:FRITH>;
 
 use NativeCall;
+use LibraryMake;
 use Math::Libgsl::Raw::Complex;
+
+constant GSLHELPER = %?RESOURCES<libraries/gslhelper>.absolute;
 
 constant LIB  = ('gsl', v23);
 
 # Polynomial evaluation
 sub gsl_poly_eval(CArray[num64] $c, int32 $length, num64 $x --> num64) is native(LIB) is export(:eval) { * }
-#sub gsl_poly_complex_eval(CArray[num64] $c, int32 $length, gsl_complex $z --> gsl_complex) is native(LIB) is export(:eval) { * }
-#sub gsl_complex_poly_complex_eval(CArray[gsl_complex] $c, size_t $len, gsl_complex $z --> gsl_complex) is native(LIB) is export(:eval) { * }
+sub mgsl_poly_complex_eval(CArray[num64] $c, int32 $length, gsl_complex $z, gsl_complex $res) is native(GSLHELPER) is export(:eval) { * }
+sub mgsl_complex_poly_complex_eval(CArray[gsl_complex] $c, size_t $len, gsl_complex $z, gsl_complex $res) is native(GSLHELPER) is export(:eval) { * }
 sub gsl_poly_eval_derivs(CArray[num64] $c, size_t $lenc, num64 $x, CArray[num64] $res, size_t $lenres --> int32) is native(LIB) is export(:eval) { * }
 # Divided difference representation of polynomials
 sub gsl_poly_dd_init(CArray[num64] $dd, CArray[num64] $xa, CArray[num64] $ya, size_t $size --> int32) is native(LIB) is export(:divdiff) { * }

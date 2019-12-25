@@ -1,6 +1,6 @@
 use v6.c;
 
-unit module Math::Libgsl::Polynomial:ver<0.0.2>:auth<cpan:FRITH>;
+unit module Math::Libgsl::Polynomial:ver<0.0.3>:auth<cpan:FRITH>;
 
 use Math::Libgsl::Raw::Polynomial :ALL;
 use Math::Libgsl::Exception;
@@ -66,11 +66,11 @@ sub poly-solve-quadratic(Num(Cool) $a, Num(Cool) $b, Num(Cool) $c --> List) is e
   return $ret, $x0, $x1;
 }
 sub poly-complex-solve-quadratic(Num(Cool) $a, Num(Cool) $b, Num(Cool) $c --> List) is export(:quad) {
-  my gsl_complex $z0 .= new;
-  my gsl_complex $z1 .= new;
+  my gsl_complex $z0 = alloc_gsl_complex;
+  my gsl_complex $z1 = alloc_gsl_complex;
   my $ret = gsl_poly_complex_solve_quadratic($a, $b, $c, $z0, $z1);
-  my Complex $root0 = $z0.re + i * $z0.im;
-  my Complex $root1 = $z1.re + i * $z1.im;
+  my Complex $root0 = $z0.dat[0] + i * $z0.dat[1];
+  my Complex $root1 = $z1.dat[0] + i * $z1.dat[1];
   return $ret, $root0, $root1;
 }
 # Cubic equations
@@ -82,13 +82,13 @@ sub poly-solve-cubic(Num(Cool) $a, Num(Cool) $b, Num(Cool) $c --> List) is expor
   return $ret, $x0, $x1, $x2;
 }
 sub poly-complex-solve-cubic(Num(Cool) $a, Num(Cool) $b, Num(Cool) $c --> List) is export(:cubic) {
-  my gsl_complex $z0 .= new;
-  my gsl_complex $z1 .= new;
-  my gsl_complex $z2 .= new;
+  my gsl_complex $z0 = alloc_gsl_complex;
+  my gsl_complex $z1 = alloc_gsl_complex;
+  my gsl_complex $z2 = alloc_gsl_complex;
   my $ret = gsl_poly_complex_solve_cubic($a, $b, $c, $z0, $z1, $z2);
-  my Complex $root0 = $z0.re + i * $z0.im;
-  my Complex $root1 = $z1.re + i * $z1.im;
-  my Complex $root2 = $z2.re + i * $z2.im;
+  my Complex $root0 = $z0.dat[0] + i * $z0.dat[1];
+  my Complex $root1 = $z1.dat[0] + i * $z1.dat[1];
+  my Complex $root2 = $z2.dat[0] + i * $z2.dat[1];
   return $ret, $root0, $root1, $root2;
 }
 # General polynomial equations

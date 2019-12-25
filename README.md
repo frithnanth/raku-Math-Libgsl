@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/frithnanth/raku-Math-Libgsl.svg?branch=master)](https://travis-ci.org/frithnanth/raku-Math-Libgsl)
-
 NAME
 ====
 
@@ -17,7 +15,7 @@ This is what's presently available as Raku subs:
 <th>C function group</th> <th>Interface subs provided</th> <th>Raku subs or methods</th>
 </tr></thead>
 <tbody>
-<tr> <td>Mathematical functions</td> <td>23</td> <td>20</td> </tr> <tr> <td>Polynomials</td> <td>15</td> <td>10</td> </tr> <tr> <td>Special functions</td> <td>519</td> <td>515</td> </tr> <tr> <td>Permutations</td> <td>58</td> <td>23</td> </tr>
+<tr> <td>Mathematical functions</td> <td>23</td> <td>20</td> </tr> <tr> <td>Complex</td> <td>61</td> <td>-</td> </tr> <tr> <td>Polynomials</td> <td>15</td> <td>10</td> </tr> <tr> <td>Special functions</td> <td>519</td> <td>515</td> </tr> <tr> <td>Permutations</td> <td>58</td> <td>25</td> </tr>
 </tbody>
 </table>
 
@@ -26,6 +24,7 @@ SYNOPSIS
 
 ```perl6
 use Math::Libgsl::Raw::Elementary :ALL;
+use Math::Libgsl::Raw::Complex :ALL;
 use Math::Libgsl::Raw::Polynomial :ALL;
 use Math::Libgsl::Raw::Function :ALL;
 use Math::Libgsl::Raw::Permutation :ALL;
@@ -47,7 +46,9 @@ This package provides both the low-level interface to the C library (Raw) and a 
 
 There are several groups of functions each coming with its own module. To avoid a massive pollution of the namespace each module exports groups of symbols using tags, so the programmer can choose what to import, or import all the tagged symbols using **:ALL**.
 
-Math::Libgsl does nothing so far, it just contains the pod6 documentation.
+The base-name module Math::Libgsl contains the pod6 documentation. Use the module specific for your program instead.
+
+Math::Libgsl::Complex will not be implemented, because Raku's Complex datatype works fine. Its Raw counterpart, Math::Libgsl::Raw::Complex, is present because it's needed by other modules that rely on the GSL implementation of complex numbers.
 
 Math::Libgsl::Elementary makes these tags available:
 
@@ -1928,7 +1929,9 @@ Math::Libgsl::Permutation
 
 ### new(:$elems!)
 
-The constructor accepts one parameter: the number of elements in the permutation. The permutation object is already initialized to the identity (0, 1, 2 … $elems - 1).
+### new($elems!)
+
+The constructor accepts one parameter: the number of elements in the permutation; it can be passed as a Pair or as a single value. The permutation object is already initialized to the identity (0, 1, 2 … $elems - 1).
 
 ### init()
 
