@@ -9,7 +9,8 @@ before_install:
   - sudo dpkg -i rakudo-pkg-Ubuntu18.04_2019.11-01_amd64.deb
   - wget 'http://http.us.debian.org/debian/pool/main/g/gsl/libgslcblas0_2.5+dfsg-6_amd64.deb'
   - wget 'http://http.us.debian.org/debian/pool/main/g/gsl/libgsl23_2.5+dfsg-6_amd64.deb'
-  - sudo dpkg -i libgslcblas0_2.5+dfsg-6_amd64.deb libgsl23_2.5+dfsg-6_amd64.deb
+  - wget 'http://http.us.debian.org/debian/pool/main/g/gsl/libgsl-dev_2.5+dfsg-6_amd64.deb'
+  - sudo dpkg -i libgslcblas0_2.5+dfsg-6_amd64.deb libgsl23_2.5+dfsg-6_amd64.deb libgsl-dev_2.5+dfsg-6_amd64.deb
 install:
   - zef install --deps-only --/test .
   - zef build .
