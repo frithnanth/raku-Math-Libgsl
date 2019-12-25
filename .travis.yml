@@ -12,6 +12,7 @@ before_install:
   - sudo dpkg -i libgslcblas0_2.5+dfsg-6_amd64.deb libgsl23_2.5+dfsg-6_amd64.deb
 install:
   - zef install --deps-only --/test .
+  - zef build .
   - ls -R src resources
 script:
   - PERL6LIB=$PWD/lib prove -e perl6 -vr t/*.rakutest
