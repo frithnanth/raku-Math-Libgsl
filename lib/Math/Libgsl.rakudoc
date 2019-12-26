@@ -17,13 +17,15 @@ This is a work in progress. The GSL is huge and I will release early and release
 This is what's presently available as Raku subs:
 
 =begin table
-C function group       | Interface subs provided | Raku subs or methods
-=======================================================================
-Mathematical functions |         23              |         20
-Complex                |         61              |          -
-Polynomials            |         15              |         10
-Special functions      |        519              |        515
-Permutations           |         58              |         25
+C function group       | Raw Interface subs | Raku subs or methods
+==================================================================
+Mathematical functions |         23         |         20
+Complex                |         61         |          -
+Polynomials            |         15         |         10
+Special functions      |        519         |        515
+Permutations           |         62         |         29
+------------------------------------------------------------------
+Total                  |        680         |        574
 =end table
 
 =head1 SYNOPSIS

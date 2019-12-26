@@ -14,10 +14,10 @@ This is what's presently available as Raku subs:
 
 <table class="pod-table">
 <thead><tr>
-<th>C function group</th> <th>Interface subs provided</th> <th>Raku subs or methods</th>
+<th>C function group</th> <th>Raw Interface subs</th> <th>Raku subs or methods</th>
 </tr></thead>
 <tbody>
-<tr> <td>Mathematical functions</td> <td>23</td> <td>20</td> </tr> <tr> <td>Complex</td> <td>61</td> <td>-</td> </tr> <tr> <td>Polynomials</td> <td>15</td> <td>10</td> </tr> <tr> <td>Special functions</td> <td>519</td> <td>515</td> </tr> <tr> <td>Permutations</td> <td>58</td> <td>25</td> </tr>
+<tr> <td>Mathematical functions Complex Polynomials Special functions Permutations</td> <td>23 61 15 519 62</td> <td>20 - 10 515 29</td> </tr> <tr> <td>Total</td> <td>680</td> <td>574</td> </tr>
 </tbody>
 </table>
 
@@ -1990,6 +1990,22 @@ This method applies the current permutation to the **@data** array with stride *
 ### permute-inverse(@data!, Int $stride! --> List)
 
 This method applies the inverse of the current permutation to the **@data** array with stride **$stride**.
+
+### permute-complex(Complex @data!, Int $stride! --> List)
+
+This method applies the current permutation to the **@data** array array of Complex with stride **$stride**.
+
+### permute-complex-inverse(Complex @data!, Int $stride! --> List)
+
+This method applies the inverse of the current permutation to the **@data** array of Complex with stride **$stride**.
+
+### permute-complex-float(Complex @data!, Int $stride! --> List)
+
+This method applies the current permutation to the **@data** array array of Complex with stride **$stride**, trating the numbers as single precision floats.
+
+### permute-complex-float-inverse(Complex @data!, Int $stride! --> List)
+
+This method applies the inverse of the current permutation to the **@data** array of Complex with stride **$stride**, trating the numbers as single precision floats.
 
 ### multiply($dst! where * ~~ Math::Libgsl::Permutation, $p2! where * ~~ Math::Libgsl::Permutation)
 
