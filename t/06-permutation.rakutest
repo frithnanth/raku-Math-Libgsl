@@ -52,6 +52,18 @@ subtest {
   @data = 100..109;
   is-deeply $p.permute-inverse(@data, 1),
     (109e0, 108e0, 107e0, 106e0, 105e0, 104e0, 103e0, 102e0, 100e0, 101e0), 'permute-inverse an array';
+  my Complex @dataz = 100+i…109+i;
+  is-deeply $p.permute-complex(@dataz, 1),
+    (108+1i, 109+1i, 107+1i, 106+1i, 105+1i, 104+1i, 103+1i, 102+1i, 101+1i, 100+1i), 'permute a complex array';
+  @dataz = 100+i…109+i;
+  is-deeply $p.permute-complex-inverse(@dataz, 1),
+    (109+1i, 108+1i, 107+1i, 106+1i, 105+1i, 104+1i, 103+1i, 102+1i, 100+1i, 101+1i), 'permute-inverse a complex array';
+  @dataz = 100+i…109+i;
+  is-deeply $p.permute-complex-float(@dataz, 1),
+    (108+1i, 109+1i, 107+1i, 106+1i, 105+1i, 104+1i, 103+1i, 102+1i, 101+1i, 100+1i), 'permute a complex float array';
+  @dataz = 100+i…109+i;
+  is-deeply $p.permute-complex-float-inverse(@dataz, 1),
+    (109+1i, 108+1i, 107+1i, 106+1i, 105+1i, 104+1i, 103+1i, 102+1i, 100+1i, 101+1i), 'permute-inverse a complex float array';
 }, 'apply permutation';
 
 subtest {

@@ -1,4 +1,4 @@
-use v6.c;
+use v6;
 
 unit module Math::Libgsl::Raw::Permutation:ver<0.0.3>:auth<cpan:FRITH>;
 
@@ -33,6 +33,10 @@ sub gsl_permutation_prev(gsl_permutation $p --> int32) is native(LIB) is export(
 # Applying Permutations
 sub gsl_permute(CArray[size_t] $p, CArray[num64] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
 sub gsl_permute_inverse(CArray[size_t] $p, CArray[num64] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_complex(CArray[size_t] $p, CArray[num64] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_complex_inverse(CArray[size_t] $p, CArray[num64] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_complex_float(CArray[size_t] $p, CArray[num32] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_complex_float_inverse(CArray[size_t] $p, CArray[num32] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
 sub gsl_permute_vector(gsl_permutation $p, gsl_vector $v --> int32) is native(LIB) is export(:permapply) { * }
 sub gsl_permute_vector_float(gsl_permutation $p, gsl_vector_float $v --> int32) is native(LIB) is export(:permapply) { * }
 sub gsl_permute_vector_char(gsl_permutation $p, gsl_vector_char $v --> int32) is native(LIB) is export(:permapply) { * }

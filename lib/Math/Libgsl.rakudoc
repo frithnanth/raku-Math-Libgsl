@@ -1727,6 +1727,22 @@ This method applies the current permutation to the B<@data> array with stride B<
 
 This method applies the inverse of the current permutation to the B<@data> array with stride B<$stride>.
 
+=head3 permute-complex(Complex @data!, Int $stride! --> List)
+
+This method applies the current permutation to the B<@data> array array of Complex with stride B<$stride>.
+
+=head3 permute-complex-inverse(Complex @data!, Int $stride! --> List)
+
+This method applies the inverse of the current permutation to the B<@data> array of Complex with stride B<$stride>.
+
+=head3 permute-complex-float(Complex @data!, Int $stride! --> List)
+
+This method applies the current permutation to the B<@data> array array of Complex with stride B<$stride>, trating the numbers as single precision floats.
+
+=head3 permute-complex-float-inverse(Complex @data!, Int $stride! --> List)
+
+This method applies the inverse of the current permutation to the B<@data> array of Complex with stride B<$stride>, trating the numbers as single precision floats.
+
 =head3 multiply($dst! where * ~~ Math::Libgsl::Permutation, $p2! where * ~~ Math::Libgsl::Permutation)
 
 This method combines the current permutation with the permutation B<$p2>, stores the result into B<$dst> and returns B<self>.

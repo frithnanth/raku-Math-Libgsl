@@ -79,6 +79,38 @@ method permute-inverse(@data!, Int $stride! --> List)
   $data.list
 }
 
+method permute-complex(Complex @data!, Int $stride! --> List)
+{
+  my CArray[num64] $data .= new: @data.map(|*)».reals.List.flat;
+  my $ret = gsl_permute_complex($!p.data, $data, $stride, @data.elems);
+  fail X::Libgsl.new: errno => $ret, error => "Can't permute_complex" if $ret ≠ GSL_SUCCESS;
+  $data.map(-> $r, $i { Complex.new($r, $i) }).list
+}
+
+method permute-complex-inverse(Complex @data!, Int $stride! --> List)
+{
+  my CArray[num64] $data .= new: @data.map(|*)».reals.List.flat;
+  my $ret = gsl_permute_complex_inverse($!p.data, $data, $stride, @data.elems);
+  fail X::Libgsl.new: errno => $ret, error => "Can't permute_complex_inverse" if $ret ≠ GSL_SUCCESS;
+  $data.map(-> $r, $i { Complex.new($r, $i) }).list
+}
+
+method permute-complex-float(Complex @data!, Int $stride! --> List)
+{
+  my CArray[num32] $data .= new: @data.map(|*)».reals.List.flat;
+  my $ret = gsl_permute_complex_float($!p.data, $data, $stride, @data.elems);
+  fail X::Libgsl.new: errno => $ret, error => "Can't permute_complex_float" if $ret ≠ GSL_SUCCESS;
+  $data.map(-> $r, $i { Complex.new($r, $i) }).list
+}
+
+method permute-complex-float-inverse(Complex @data!, Int $stride! --> List)
+{
+  my CArray[num32] $data .= new: @data.map(|*)».reals.List.flat;
+  my $ret = gsl_permute_complex_float_inverse($!p.data, $data, $stride, @data.elems);
+  fail X::Libgsl.new: errno => $ret, error => "Can't permute_complex_float_inverse" if $ret ≠ GSL_SUCCESS;
+  $data.map(-> $r, $i { Complex.new($r, $i) }).list
+}
+
 method multiply($dst! where * ~~ Math::Libgsl::Permutation, $p2! where * ~~ Math::Libgsl::Permutation)
 {
   my $ret = gsl_permutation_mul($dst.p, $!p, $p2.p);

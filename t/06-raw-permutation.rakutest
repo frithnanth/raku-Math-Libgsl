@@ -75,7 +75,20 @@ subtest {
   $c = CArray[num64].new: 100e0, 101e0, 102e0, 103e0, 104e0;
   ok gsl_permute_inverse($p.data, $c, 1, 5) == GSL_SUCCESS, 'gsl_permute_inverse returns success';
   is-deeply $c.list, (100e0, 101e0, 102e0, 104e0, 103e0), 'input data inverted';
+  my $z = CArray[num64].new: 100e0, 1e0, 101e0, 1e0, 102e0, 1e0, 103e0, 1e0, 104e0, 1e0;
+  ok gsl_permute_complex($p.data, $z, 1, 5) == GSL_SUCCESS, 'gsl_permute_complex returns success';
+  is-deeply $z.list, (100e0, 1e0, 101e0, 1e0, 102e0, 1e0, 104e0, 1e0, 103e0, 1e0), 'complex data permutated';
+  $c = CArray[num64].new: 100e0, 101e0, 102e0, 103e0, 104e0;
+  ok gsl_permute_complex_inverse($p.data, $z, 1, 5) == GSL_SUCCESS, 'gsl_permute_complex_inverse returns success';
+  is-deeply $z.list, (100e0, 1e0, 101e0, 1e0, 102e0, 1e0, 103e0, 1e0, 104e0, 1e0), 'complex data permutated';
+  my $zf = CArray[num32].new: 100e0, 1e0, 101e0, 1e0, 102e0, 1e0, 103e0, 1e0, 104e0, 1e0;
+  ok gsl_permute_complex_float($p.data, $zf, 1, 5) == GSL_SUCCESS, 'gsl_permute_complex_float returns success';
+  is-deeply $zf.list, (100e0, 1e0, 101e0, 1e0, 102e0, 1e0, 104e0, 1e0, 103e0, 1e0), 'complex float data permutated';
+  $c = CArray[num64].new: 100e0, 101e0, 102e0, 103e0, 104e0;
+  ok gsl_permute_complex_float_inverse($p.data, $zf, 1, 5) == GSL_SUCCESS, 'gsl_permute_complex_float_inverse returns success';
+  is-deeply $zf.list, (100e0, 1e0, 101e0, 1e0, 102e0, 1e0, 103e0, 1e0, 104e0, 1e0), 'complex float data permutated';
   # TODO test vector and matrix permutation when the matrix module is done
+  $c = CArray[num64].new: 100e0, 101e0, 102e0, 104e0, 103e0;
   my $p1 = gsl_permutation_alloc(5);
   gsl_permutation_init($p1);
   gsl_permutation_next($p1);
