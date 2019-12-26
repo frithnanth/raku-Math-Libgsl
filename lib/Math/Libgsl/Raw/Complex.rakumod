@@ -1,4 +1,4 @@
-use v6.c;
+use v6;
 
 unit module Math::Libgsl::Raw::Complex:ver<0.0.3>:auth<cpan:FRITH>;
 
@@ -11,6 +11,10 @@ constant LIB  = ('gsl', v23);
 
 class gsl_complex is repr('CStruct') is export {
   HAS num64 @.dat[2] is CArray;
+}
+
+class gsl_complex_float is repr('CStruct') is export {
+  HAS num32 @.dat[2] is CArray;
 }
 
 # Representation
