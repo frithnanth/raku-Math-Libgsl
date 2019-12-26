@@ -4,6 +4,8 @@ unit package Math::Libgsl:ver<0.0.3>:auth<cpan:FRITH>;
 
 =begin pod
 
+[![Build Status](https://travis-ci.org/frithnanth/raku-Math-Libgsl.svg?branch=master)](https://travis-ci.org/frithnanth/raku-Math-Libgsl)
+
 =head1 NAME
 
 Math::Libgsl - An interface to libgsl, the Gnu Scientific Library.

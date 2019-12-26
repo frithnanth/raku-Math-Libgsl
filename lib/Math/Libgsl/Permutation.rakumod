@@ -1,4 +1,4 @@
-use v6.c;
+use v6;
 
 unit class Math::Libgsl::Permutation:ver<0.0.3>:auth<cpan:FRITH>;
 
