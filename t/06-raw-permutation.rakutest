@@ -49,6 +49,11 @@ subtest {
   my $p1 = gsl_permutation_alloc(10);
   gsl_permutation_init($p1);
   gsl_permutation_next($p1);
+  my $filename = 't/raw-permutation.dat';
+  LEAVE { with $filename.IO { .unlink if .e } }
+  ok mgsl_permutation_fwrite($filename, $p1) == GSL_SUCCESS, 'can write data to file';
+  ok mgsl_permutation_fread($filename, $p1) == GSL_SUCCESS, 'can read data from file';
+  is-deeply $p1.data[^10], (0, 1, 2, 3, 4, 5, 6, 7, 9, 8), 'verify data';
   my $inv = gsl_permutation_calloc(10);
   ok gsl_permutation_inverse($inv, $p1) == GSL_SUCCESS, 'inverse permutation';
   ok $inv.data[9] == 8, 'data inverted';

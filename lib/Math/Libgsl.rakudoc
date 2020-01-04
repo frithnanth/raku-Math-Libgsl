@@ -23,9 +23,9 @@ Mathematical functions |         23         |         20
 Complex                |         61         |          -
 Polynomials            |         15         |         10
 Special functions      |        519         |        515
-Permutations           |         62         |         29
+Permutations           |         66         |         34
 ------------------------------------------------------------------
-Total                  |        680         |        574
+Total                  |        684         |        579
 =end table
 
 =head1 SYNOPSIS
@@ -1744,6 +1744,24 @@ This method applies the current permutation to the B<@data> array array of Compl
 =head3 permute-complex-float-inverse(Complex @data!, Int $stride! --> List)
 
 This method applies the inverse of the current permutation to the B<@data> array of Complex with stride B<$stride>, trating the numbers as single precision floats.
+
+=head3 write(Str $filename! --> Int)
+
+This method writes the permutation data to a file.
+
+=head3 read(Str $filename! --> Int)
+
+This method reads the permutation data from a file.
+The permutation must be of the same size of the one to be read.
+
+=head3 fprintf(Str $filename!, Str $format! --> Int)
+
+This method writes the permutation data to a file, using the format specifier.
+
+=head3 fscanf(Str $filename!)
+
+This method reads the permutation data from a file.
+The permutation must be of the same size of the one to be read.
 
 =head3 multiply($dst! where * ~~ Math::Libgsl::Permutation, $p2! where * ~~ Math::Libgsl::Permutation)
 

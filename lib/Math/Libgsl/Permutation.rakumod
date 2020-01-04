@@ -111,6 +111,36 @@ method permute-complex-float-inverse(Complex @data!, Int $stride! --> List)
   $data.map(-> $r, $i { Complex.new($r, $i) }).list
 }
 
+# TODO add methods for vectors and matrices when done
+
+method write(Str $filename! --> Int)
+{
+  my $ret = mgsl_permutation_fwrite($filename, $!p);
+  fail X::Libgsl.new: errno => $ret, error => "Can't write to file" if $ret ≠ GSL_SUCCESS;
+  GSL_SUCCESS;
+}
+
+method read(Str $filename! --> Int)
+{
+  my $ret = mgsl_permutation_fread($filename, $!p);
+  fail X::Libgsl.new: errno => $ret, error => "Can't read from file" if $ret ≠ GSL_SUCCESS;
+  GSL_SUCCESS;
+}
+
+method fprintf(Str $filename!, Str $format! --> Int)
+{
+  my $ret = mgsl_permutation_fprintf($filename, $!p, $format);
+  fail X::Libgsl.new: errno => $ret, error => "Can't fprintf to file" if $ret ≠ GSL_SUCCESS;
+  GSL_SUCCESS;
+}
+
+method fscanf(Str $filename! --> Int)
+{
+  my $ret = mgsl_permutation_fscanf($filename, $!p);
+  fail X::Libgsl.new: errno => $ret, error => "Can't fscanf from file" if $ret ≠ GSL_SUCCESS;
+  GSL_SUCCESS;
+}
+
 method multiply($dst! where * ~~ Math::Libgsl::Permutation, $p2! where * ~~ Math::Libgsl::Permutation)
 {
   my $ret = gsl_permutation_mul($dst.p, $!p, $p2.p);

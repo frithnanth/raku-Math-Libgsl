@@ -12,7 +12,6 @@ subtest {
   ok $p.get(9) == 9, 'get an element';
   throws-like { $p.get(10) }, X::Libgsl, message => /'out of range'/, 'fails if requested element is out of range';
   my Math::Libgsl::Permutation $p1 .= new(10);
-  isa-ok $p1, Math::Libgsl::Permutation;
   isa-ok $p1, Math::Libgsl::Permutation, 'new using single value';
   ok $p1.get(9) == 9, 'get an element';
   lives-ok { $p.swap(9, 8) }, "swap lives";
@@ -36,6 +35,11 @@ subtest {
   my Math::Libgsl::Permutation $p .= new(:elems(5));
   lives-ok { $p.next }, 'can get next permutation';
   is-deeply $p.all, (0, 1, 2, 4, 3), 'next permutation ok';
+  my $filename = 't/permutation.dat';
+  LEAVE { with $filename.IO { .unlink if .e } }
+  ok $p.write($filename) == GSL_SUCCESS, 'can write data to file';
+  ok $p.read($filename) == GSL_SUCCESS, 'can read data from file';
+  is-deeply $p.all, (0, 1, 2, 4, 3), 'verify data';
   lives-ok { $p.prev }, 'can get previous permutation';
   is-deeply $p.all, (0, 1, 2, 3, 4), 'previous permutation ok';
   $p.init;

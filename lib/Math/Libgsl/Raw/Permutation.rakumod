@@ -2,8 +2,11 @@ use v6;
 
 unit module Math::Libgsl::Raw::Permutation:ver<0.0.3>:auth<cpan:FRITH>;
 
-use NativeCall;
 use Math::Libgsl::Raw::Matrix;
+use NativeCall;
+use LibraryMake;
+
+constant GSLHELPER = %?RESOURCES<libraries/gslhelper>.absolute;
 
 constant LIB  = ('gsl', v23);
 
@@ -74,6 +77,11 @@ sub gsl_permute_matrix_ulong(gsl_permutation $p, gsl_matrix_ulong $A --> int32) 
 sub gsl_permute_matrix_complex(gsl_permutation $p, gsl_matrix_complex $A --> int32) is native(LIB) is export(:permapply) { * }
 sub gsl_permute_matrix_complex_float(gsl_permutation $p, gsl_matrix_complex_float $A --> int32) is native(LIB) is export(:permapply) { * }
 sub gsl_permutation_mul(gsl_permutation $p, gsl_permutation $pa, gsl_permutation $pb --> int32) is native(LIB) is export(:permapply) { * }
+# Reading and writing permutations
+sub mgsl_permutation_fwrite(Str $filename, gsl_permutation $p --> int32) is native(GSLHELPER) is export(:permio) { * }
+sub mgsl_permutation_fread(Str $filename, gsl_permutation $p --> int32) is native(GSLHELPER) is export(:permio) { * }
+sub mgsl_permutation_fprintf(Str $filename, gsl_permutation $p, Str $format --> int32) is native(GSLHELPER) is export(:permio) { * }
+sub mgsl_permutation_fscanf(Str $filename, gsl_permutation $p --> int32) is native(GSLHELPER) is export(:permio) { * }
 # Permutations in cyclic form
 sub gsl_permutation_linear_to_canonical(gsl_permutation $q, gsl_permutation $p --> int32) is native(LIB) is export(:permcyclic) { * }
 sub gsl_permutation_canonical_to_linear(gsl_permutation $p, gsl_permutation $q --> int32) is native(LIB) is export(:permcyclic) { * }
