@@ -16,6 +16,8 @@ use-ok 'Math::Libgsl::Raw::Permutation';
 use-ok 'Math::Libgsl::Elementary';
 use-ok 'Math::Libgsl::Function';
 use-ok 'Math::Libgsl::Polynomial';
+use-ok 'Math::Libgsl::Block';
+use-ok 'Math::Libgsl::Vector';
 use-ok 'Math::Libgsl::Permutation';
 
 done-testing;

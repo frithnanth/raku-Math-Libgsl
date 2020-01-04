@@ -1,0 +1,61 @@
+#!/usr/bin/env perl6
+
+use Test;
+use lib 'lib';
+use Math::Libgsl::Vector;
+use Math::Libgsl::Constants;
+
+subtest {
+  my Math::Libgsl::Vector $v1 .= new(:size(10));
+  isa-ok $v1, Math::Libgsl::Vector, 'new using pair';
+  ok $v1.vector.size == 10, 'attributes ok';
+  my Math::Libgsl::Vector $v2 .= new(10);
+  isa-ok $v2, Math::Libgsl::Vector, 'new using single value';
+}, 'vector';
+
+subtest {
+  my Math::Libgsl::Vector $v1 .= new(:size(10));
+  ok $v1.get(0) == 0, 'get element';
+  ok $v1[0] == 0, 'get element using postcircumfix';
+  lives-ok { $v1.set(0, 10) }, 'element set lives';
+  ok $v1.get(0) == 10e0, 'element set';
+  lives-ok { $v1[1] = 12 }, 'set element using postcircumfix lives';
+  ok $v1.get(1) == 12e0, 'element set using postcircumfix lives';
+  is-deeply $v1[^3], (10e0, 12e0, 0e0), 'get range of elements';
+  lives-ok { $v1.setall(1) }, 'set all elements';
+  is-deeply $v1[^10], (1e0 xx 10), 'all elements set';
+  lives-ok { $v1.zero }, 'set all elements to zero';
+  is-deeply $v1[^10], (0e0 xx 10), 'all elements zeroed';
+  ok $v1.basis(1) == GSL_SUCCESS, 'basis ok';
+  is-deeply $v1[^10], (0e0, 1e0, 0e0 xx 8).flat, 'basis vector';
+}, 'vector set & get';
+
+subtest {
+  my Math::Libgsl::Vector $v1 .= new(:size(10));
+  $v1.setall(1);
+  my $filename = 't/vector.dat';
+  LEAVE { with $filename.IO { .unlink if .e } }
+  ok $v1.write($filename) == GSL_SUCCESS, 'can write a vector to file';
+  ok $v1.read($filename) == GSL_SUCCESS, 'can read a vector from file';
+  ok $v1.printf($filename, "%3.1lf") == GSL_SUCCESS, 'can print a vector to file';
+  is-deeply $filename.IO.lines, '1.0' xx 10, 'vector file ok';
+}, 'vector IO';
+
+subtest {
+  my Math::Libgsl::Vector $v1 .= new(:size(10));
+  $v1.set($_, $_.Num) for ^10;
+  my Math::Libgsl::Vector $vv = $v1.subvector(1, 3);
+  isa-ok $vv, Math::Libgsl::Vector, 'subvector view';
+  $vv[1] = 42;
+  is-deeply $v1[^10], (0, 1, 42, 3..9).flat».Num, 'vector can be written through view';
+  $vv = $v1.subvector-stride(1, 2, 4);
+  isa-ok $vv, Math::Libgsl::Vector, 'subvector view with stride';
+  is-deeply $vv[^2], (1e0, 5e0), 'subvector with stride checks';
+  my Num @array = 1e0..10e0;
+  my $av = $v1.subarray(@array);
+  is-deeply $av[^10], (1e0..10e0).flat, 'subarray';
+  my $avs= $v1.subarray-stride(4, @array);
+  is-deeply $avs[^3], (1e0, 5e0, 9e0), 'subarray with stride';
+}, 'vector views';
+
+done-testing;
