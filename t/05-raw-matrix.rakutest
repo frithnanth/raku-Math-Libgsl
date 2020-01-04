@@ -1,0 +1,359 @@
+#!/usr/bin/env perl6
+
+use Test;
+use lib 'lib';
+use Math::Libgsl::Raw::Matrix :ALL;
+use Math::Libgsl::Raw::Complex :ALL;
+use Math::Libgsl::Constants;
+use NativeCall;
+
+subtest {
+  my gsl_block $b;
+  lives-ok { $b = gsl_block_alloc(10) }, 'can alloc block';
+  ok $b.size == 10, 'block successfully allocated';
+  my gsl_block $bc;
+  lives-ok { $bc = gsl_block_calloc(10) }, 'can calloc block';
+  ok $bc.size == 10, 'block successfully allocated and cleared';
+  my $filename = 't/block.dat';
+  LEAVE { with $filename.IO { .unlink if .e } }
+  ok mgsl_block_fwrite($filename, $bc) == GSL_SUCCESS, 'can write a block to file';
+  ok mgsl_block_fread($filename, $bc) == GSL_SUCCESS, 'can read a block from file';
+  lives-ok { gsl_block_free($bc) }, 'can free block';
+  gsl_block_free($b);
+}, 'block';
+
+subtest {
+  my gsl_vector $v;
+  lives-ok { $v = gsl_vector_alloc(10) }, 'can alloc vector';
+  my gsl_vector_float $vf;
+  lives-ok { $vf = gsl_vector_float_alloc(10) }, 'can alloc float vector';
+  lives-ok { gsl_vector_free($v) }, 'can free a vector';
+  lives-ok { $v = gsl_vector_calloc(10) }, 'can calloc vector';
+  ok gsl_vector_get($v, 0) == 0, 'can get an element';
+  lives-ok { gsl_vector_set($v, 0, 10e0) }, 'set an element lives';
+  is gsl_vector_get($v, 0) == 10e0 && gsl_vector_get($v, 1) == 0, True, 'can set an element';
+  lives-ok { gsl_vector_set_all($v, 10e0) }, 'set all elements lives';
+  is-deeply (gather take gsl_vector_get($v, $_) for ^10), 10e0 xx 10, 'all elements set';
+  lives-ok { gsl_vector_set_zero($v) }, 'set all elements lives';
+  is-deeply (gather take gsl_vector_get($v, $_) for ^10), 0e0 xx 10, 'all elements zeroed';
+  ok gsl_vector_set_basis($v, 0) == GSL_SUCCESS, 'make a basis vector';
+  is-deeply (gather take gsl_vector_get($v, $_) for ^10), (1e0, 0e0 xx 9).flat, 'basis vector ok';
+  my $filename = 't/vector.dat';
+  LEAVE { with $filename.IO { .unlink if .e } }
+  ok mgsl_vector_fwrite($filename, $v) == GSL_SUCCESS, 'can write a vector to a file';
+  gsl_vector_set_zero($v);
+  ok mgsl_vector_fread($filename, $v) == GSL_SUCCESS, 'can write a vector to a file';
+  is-deeply (gather take gsl_vector_get($v, $_) for ^10), (1e0, 0e0 xx 9).flat, 'vector IO ok';
+  gsl_vector_free($v);
+  gsl_vector_float_free($vf);
+}, 'vector';
+
+subtest {
+  my gsl_vector $v = gsl_vector_alloc(10);
+  gsl_vector_set($v, $_, $_.Num) for ^10;
+  my gsl_vector_view $view1;
+  lives-ok { $view1 = alloc_gsl_vector_view() }, 'can allocate a vector view';
+  my gsl_vector $vv;
+  lives-ok { $vv = mgsl_vector_subvector($view1, $v, 1, 4) }, 'get a vector view';
+  is-deeply (gather take gsl_vector_get($vv, $_) for ^4), (1..4).flat».Num, 'vector view ok';
+  gsl_vector_set_all($vv, 0e0);
+  is-deeply (gather take gsl_vector_get($v, $_) for ^10), (0e0 xx 5, 5..9).flat».Num, 'can modify original vector';
+  my gsl_vector_view $view2 = alloc_gsl_vector_view();
+  lives-ok { $vv = mgsl_vector_subvector_with_stride($view2, $v, 3, 2, 4) }, 'get a vector view with stride';
+  is-deeply (gather take gsl_vector_get($vv, $_) for ^4), (0e0, 5e0, 7e0, 9e0), 'vector view with stride ok';
+  my CArray[num64] $base .= new: (0..10)».Num;
+  my gsl_vector_view $view3 = alloc_gsl_vector_view();
+  lives-ok { $vv = mgsl_vector_view_array($view3, $base, 4) }, 'view from an array';
+  is-deeply (gather take gsl_vector_get($vv, $_) for ^4), (0e0 … 3e0).list, 'vector view from array ok';
+  gsl_vector_set_all($vv, 0e0);
+  is-deeply ($base.list), (0e0 xx 4, (4e0..10e0).list).flat, 'can modify original CArray';
+  $base = CArray[num64].new: (0..10)».Num;
+  my gsl_vector_view $view4 = alloc_gsl_vector_view();
+  lives-ok { $vv = mgsl_vector_view_array_with_stride($view4, $base, 2, 4) }, 'view from an array';
+  is-deeply (gather take gsl_vector_get($vv, $_) for ^4), (0e0, 2e0 … 6e0).list, 'vector view from array with stride ok';
+  my gsl_vector_complex $cv = gsl_vector_complex_alloc(4);
+  my gsl_complex $z = alloc_gsl_complex();
+  mgsl_complex_rect(1e0, 2e0, $z);
+  mgsl_vector_complex_set_all($cv, $z);
+  my gsl_vector_view $view5 = alloc_gsl_vector_view();
+  lives-ok { $vv = mgsl_vector_complex_real($view5, $cv) }, 'vector view on real values of a complex vector';
+  is-deeply (gather take gsl_vector_get($vv, $_) for ^4), (1e0 xx 4).list, 'vector of real values ok';
+  my gsl_vector_view $view6 = alloc_gsl_vector_view();
+  lives-ok { $vv = mgsl_vector_complex_imag($view6, $cv) }, 'vector view on imag values of a complex vector';
+  is-deeply (gather take gsl_vector_get($vv, $_) for ^4), (2e0 xx 4).list, 'vector of imag values ok';
+  free_gsl_complex($z);
+  lives-ok { free_gsl_vector_view($view1) }, 'can free a vector view';
+  free_gsl_vector_view($_) for ($view2, $view3, $view4, $view5, $view6);
+  gsl_vector_free($v);
+  gsl_vector_complex_free($cv);
+}, 'vector view';
+
+subtest {
+  my gsl_vector $v = gsl_vector_alloc(10);
+  gsl_vector_set_basis($v, 0);
+  my gsl_vector $w = gsl_vector_alloc(10);
+  gsl_vector_set_zero($w);
+  ok gsl_vector_memcpy($w, $v) == GSL_SUCCESS, 'can copy';
+  is-deeply (gather take gsl_vector_get($w, $_) for ^10), (1e0, 0e0 xx 9).flat, 'vector copy ok';
+  gsl_vector_set_zero($w);
+  ok gsl_vector_swap($w, $v) == GSL_SUCCESS, 'can swap';
+  is-deeply (gather take gsl_vector_get($w, $_) for ^10), (1e0, 0e0 xx 9).flat, 'vector swap ok';
+  gsl_vector_free($v);
+  gsl_vector_free($w);
+}, 'vector copy';
+
+subtest {
+  my gsl_vector $v = gsl_vector_alloc(10);
+  gsl_vector_set_basis($v, 0);
+  ok gsl_vector_swap_elements($v, 0, 1) == GSL_SUCCESS, 'can swap elements';
+  is-deeply (gather take gsl_vector_get($v, $_) for ^10), (0e0, 1e0, 0e0 xx 8).flat, 'vector swap elements ok';
+  ok gsl_vector_reverse($v) == GSL_SUCCESS, 'can reverse elements';
+  is-deeply (gather take gsl_vector_get($v, $_) for ^10), (0e0, 1e0, 0e0 xx 8).reverse.flat, 'vector reverse elements ok';
+  gsl_vector_free($v);
+}, 'vector elements';
+
+subtest {
+  my gsl_vector $v1 = gsl_vector_alloc(10);
+  gsl_vector_set_all($v1, 4e0);
+  my gsl_vector $v2 = gsl_vector_alloc(10);
+  gsl_vector_set_all($v2, 2e0);
+  ok gsl_vector_add($v1, $v2) == GSL_SUCCESS, 'can add';
+  is-deeply (gather take gsl_vector_get($v1, $_) for ^10), (6e0 xx 10).flat, 'vector add ok';
+  ok gsl_vector_sub($v1, $v2) == GSL_SUCCESS, 'can sub';
+  is-deeply (gather take gsl_vector_get($v1, $_) for ^10), (4e0 xx 10).flat, 'vector sub ok';
+  ok gsl_vector_mul($v1, $v2) == GSL_SUCCESS, 'can mul';
+  is-deeply (gather take gsl_vector_get($v1, $_) for ^10), (8e0 xx 10).flat, 'vector mul ok';
+  ok gsl_vector_div($v1, $v2) == GSL_SUCCESS, 'can div';
+  is-deeply (gather take gsl_vector_get($v1, $_) for ^10), (4e0 xx 10).flat, 'vector div ok';
+  ok gsl_vector_scale($v1, 2e0) == GSL_SUCCESS, 'can scale';
+  is-deeply (gather take gsl_vector_get($v1, $_) for ^10), (8e0 xx 10).flat, 'vector scale ok';
+  ok gsl_vector_add_constant($v1, 1e0) == GSL_SUCCESS, 'can add a constant';
+  is-deeply (gather take gsl_vector_get($v1, $_) for ^10), (9e0 xx 10).flat, 'vector add_constant ok';
+}, 'vector operations';
+
+subtest {
+  my gsl_vector $v = gsl_vector_alloc(4);
+  gsl_vector_set($v, 0, 0e0);
+  gsl_vector_set($v, 1, 1e0);
+  gsl_vector_set($v, 2, 2e0);
+  gsl_vector_set($v, 3, 3e0);
+  ok gsl_vector_max($v) == 3e0, 'can find max element';
+  ok gsl_vector_min($v) == 0e0, 'can find min element';
+  my num64 ($min, $max);
+  lives-ok { gsl_vector_minmax($v, $min, $max) }, 'can minmax';
+  ok $min == 0e0, 'min found';
+  ok $max == 3e0, 'max found';
+  ok gsl_vector_max_index($v) == 3, 'can find index max element';
+  ok gsl_vector_min_index($v) == 0, 'can find index min element';
+  my size_t ($imin, $imax);
+  lives-ok { gsl_vector_minmax_index($v, $imin, $imax) }, 'can find index of min and max element';
+  ok $imin == 0, 'index of min found';
+  ok $imax == 3, 'index of max found';
+}, 'vector min and max';
+
+subtest {
+  my gsl_vector $v = gsl_vector_alloc(4);
+  gsl_vector_set_zero($v);
+  ok gsl_vector_isnull($v) == 1, 'all elements of v are 0';
+  gsl_vector_set_all($v, 2e0);
+  ok gsl_vector_ispos($v) == 1, 'all elements of v are >0';
+  gsl_vector_set($v, 2, 0e0);
+  nok gsl_vector_ispos($v) == 1, 'not all elements of v are >0';
+  ok gsl_vector_isnonneg($v) == 1, 'all elements of v are ≥0';
+  gsl_vector_set_all($v, -2e0);
+  ok gsl_vector_isneg($v) == 1, 'all elements of v are <0';
+  my gsl_vector $w = gsl_vector_alloc(4);
+  gsl_vector_set_all($w, -2e0);
+  ok gsl_vector_equal($v, $w) == 1, 'two vectors are equal';
+}, 'vector properties';
+
+subtest {
+  my gsl_matrix $m;
+  lives-ok { $m = gsl_matrix_alloc(10, 10) }, 'can alloc matrix';
+  my gsl_matrix_float $mf;
+  lives-ok { $mf = gsl_matrix_float_alloc(10, 10) }, 'can alloc float matrix';
+  lives-ok { gsl_matrix_free($m) }, 'can free a matrix';
+  lives-ok { $m = gsl_matrix_calloc(10, 10) }, 'can calloc matrix';
+  ok gsl_matrix_get($m, 0, 0) == 0, 'can get an element';
+  lives-ok { gsl_matrix_set($m, 0, 0, 10e0) }, 'set an element lives';
+  is gsl_matrix_get($m, 0, 0) == 10e0 && gsl_matrix_get($m, 1, 0) == 0, True, 'can set an element';
+  lives-ok { gsl_matrix_set_all($m, 10e0) }, 'set all elements lives';
+  is-deeply (gather for ^10 -> $i { for ^10 -> $j { take gsl_matrix_get($m, $i, $j) } } ), 10e0 xx 100, 'all elements set';
+  lives-ok { gsl_matrix_set_zero($m) }, 'set all elements lives';
+  is-deeply (gather for ^10 -> $i { for ^10 -> $j { take gsl_matrix_get($m, $i, $j) } } ), 0e0 xx 100, 'all elements zeroed';
+  lives-ok { gsl_matrix_set_identity($m) }, 'make an identity matrix';
+  is-deeply (gather take gsl_matrix_get($m, $_, $_) for ^10), (1e0 xx 10).flat, 'diagonal matrix ok';
+  is-deeply (gather for ^10 -> $i { for ^10 -> $j { take gsl_matrix_get($m, $i, $j) unless $i == $j } } ), 0e0 xx 90, 'elements outside diagonal all 0';
+  my $filename = 't/matrix.dat';
+  LEAVE { with $filename.IO { .unlink if .e } }
+  lives-ok { gsl_matrix_set_all($m, 10e0) }, 'set all elements lives';
+  ok mgsl_matrix_fwrite($filename, $m) == GSL_SUCCESS, 'can write a matrix to a file';
+  gsl_matrix_set_zero($m);
+  ok mgsl_matrix_fread($filename, $m) == GSL_SUCCESS, 'can write a matrix to a file';
+  is-deeply (gather for ^10 -> $i { for ^10 -> $j { take gsl_matrix_get($m, $i, $j) } } ), 10e0 xx 100, 'matrix IO ok';
+  gsl_matrix_free($m);
+  gsl_matrix_float_free($mf);
+}, 'matrix';
+
+subtest {
+  my gsl_matrix $m = gsl_matrix_alloc(10, 10);
+  gsl_matrix_set_all($m, 10e0);
+  my gsl_matrix_view $view1;
+  lives-ok { $view1 = alloc_gsl_matrix_view() }, 'can allocate a matrix view';
+  my gsl_matrix $mv;
+  lives-ok { $mv = mgsl_matrix_submatrix($view1, $m, 1, 1, 4, 4) }, 'get a matrix view';
+  is-deeply (gather for ^4 -> $i { for ^4 -> $j { take gsl_matrix_get($mv, $i, $j) } } ), 10e0 xx 16, 'submatrix ok';
+  gsl_matrix_set_all($mv, 0e0);
+  is-deeply (gather for ^10 -> $i { for ^10 -> $j { take gsl_matrix_get($m, $i, $j) } } ), (10e0 xx 10, (10e0, 0e0 xx 4, 10e0 xx 5) xx 4, (10e0 xx 10) xx 5).flat, 'can modify original matrix';
+  gsl_matrix_set_all($m, 10e0);
+  my CArray[num64] $base .= new: (0..100)».Num;
+  my gsl_matrix_view $view2 = alloc_gsl_matrix_view();
+  lives-ok { $mv = mgsl_matrix_view_array($view2, $base, 4, 4) }, 'view from an array';
+  is-deeply (gather for ^4 -> $i { for ^4 -> $j { take gsl_matrix_get($mv, $i, $j) } } ), (^16).flat».Num, 'view from array ok';
+  gsl_matrix_set_all($mv, 0e0);
+  is-deeply $base.list, (0e0 xx 16, 16e0..100e0).flat, 'can modify original CArray';
+  $base = CArray[num64].new: (0..100)».Num;
+  my gsl_matrix_view $view3 = alloc_gsl_matrix_view();
+  lives-ok { $mv = mgsl_matrix_view_array_with_tda($view3, $base, 4, 4, 10) }, 'view from an array with tda';
+  is-deeply (gather for ^4 -> $i { for ^4 -> $j { take gsl_matrix_get($mv, $i, $j) } } ), (0..3, 10..13, 20..23, 30..33).flat».Num, 'view from array with tda ok';
+  my gsl_vector $v = gsl_vector_alloc(100);
+  gsl_vector_set_all($v, 10e0);
+  my gsl_matrix_view $view4 = alloc_gsl_matrix_view();
+  lives-ok { $mv = mgsl_matrix_view_vector($view4, $v, 4, 4) }, 'view from a vector';
+  is-deeply (gather for ^4 -> $i { for ^4 -> $j { take gsl_matrix_get($mv, $i, $j) } } ), 10e0 xx 16, 'view from a vector ok';
+  my gsl_matrix_view $view5 = alloc_gsl_matrix_view();
+  lives-ok { $mv = mgsl_matrix_view_vector_with_tda($view5, $v, 4, 4, 10) }, 'view from a vector with tda';
+  is-deeply (gather for ^4 -> $i { for ^4 -> $j { take gsl_matrix_get($mv, $i, $j) } } ), 10e0 xx 16, 'view from vector with tda ok';
+  my gsl_vector_view $view6 = alloc_gsl_vector_view();
+  my gsl_vector $vv;
+  gsl_matrix_set_identity($m);
+  lives-ok { $vv = mgsl_matrix_row($view6, $m, 1) }, 'view from a matrix row';
+  is-deeply (gather for ^10 -> $i { take gsl_vector_get($vv, $i) }), (0e0, 1e0, 0e0 xx 8).flat, 'row view ok';
+  my gsl_vector_view $view7 = alloc_gsl_vector_view();
+  lives-ok { $vv = mgsl_matrix_column($view7, $m, 1) }, 'view from a matrix column';
+  is-deeply (gather for ^10 -> $i { take gsl_vector_get($vv, $i) }), (0e0, 1e0, 0e0 xx 8).flat, 'column view ok';
+  my gsl_vector_view $view8 = alloc_gsl_vector_view();
+  lives-ok { $vv = mgsl_matrix_subrow($view8, $m, 0, 0, 4) }, 'view from a matrix subrow';
+  is-deeply (gather for ^4 -> $i { take gsl_vector_get($vv, $i) }), (1e0, 0e0 xx 3).flat, 'subrow view ok';
+  my gsl_vector_view $view9 = alloc_gsl_vector_view();
+  lives-ok { $vv = mgsl_matrix_subcolumn($view9, $m, 0, 0, 4) }, 'view from a matrix subcolumn';
+  is-deeply (gather for ^4 -> $i { take gsl_vector_get($vv, $i) }), (1e0, 0e0 xx 3).flat, 'subcolumn view ok';
+  my gsl_vector_view $view10 = alloc_gsl_vector_view();
+  lives-ok { $vv = mgsl_matrix_diagonal($view10, $m) }, 'view from a matrix diagonal';
+  is-deeply (gather for ^10 -> $i { take gsl_vector_get($vv, $i) }), (1e0 xx 10), 'diagonal view ok';
+  my gsl_vector_view $view11 = alloc_gsl_vector_view();
+  lives-ok { $vv = mgsl_matrix_subdiagonal($view11, $m, 0) }, 'view from a matrix subdiagonal';
+  is-deeply (gather for ^10 -> $i { take gsl_vector_get($vv, $i) }), (1e0 xx 10), 'subdiagonal view ok';
+  my gsl_vector_view $view12 = alloc_gsl_vector_view();
+  lives-ok { $vv = mgsl_matrix_superdiagonal($view12, $m, 0) }, 'view from a matrix superdiagonal';
+  is-deeply (gather for ^10 -> $i { take gsl_vector_get($vv, $i) }), (1e0 xx 10), 'superdiagonal view ok';
+  free_gsl_matrix_view($_) for $view1, $view2, $view3, $view4, $view5;
+  free_gsl_vector_view($_) for $view6, $view7, $view8, $view9, $view10, $view11, $view12;
+  gsl_vector_free($v);
+  gsl_matrix_free($m);
+}, 'matrix view';
+
+subtest {
+  my gsl_matrix $m1 = gsl_matrix_alloc(4, 4);
+  my gsl_matrix $m2 = gsl_matrix_alloc(4, 4);
+  gsl_matrix_set_identity($m1);
+  gsl_matrix_set_zero($m2);
+  ok gsl_matrix_swap($m1, $m2) == GSL_SUCCESS, 'can swap elements of two matrices';
+  my $mm = flat ((1e0, 0e0, 0e0, 0e0).rotate($_) for 0…-3);
+  is-deeply ( gather for ^4 -> $i { for ^4 -> $j { take gsl_matrix_get($m2, $i, $j) } } ), $mm, 'element swap ok';
+  ok gsl_matrix_memcpy($m1, $m2) == GSL_SUCCESS, 'can copy a matrix';
+  is-deeply ( gather for ^4 -> $i { for ^4 -> $j { take gsl_matrix_get($m1, $i, $j) } } ), $mm, 'matrix copy ok';
+  my gsl_vector $v = gsl_vector_alloc(4);
+  ok gsl_matrix_get_row($v, $m1, 0) == GSL_SUCCESS, 'can get row';
+  is-deeply ( gather for ^4 -> $i { take gsl_vector_get($v, $i) } ), (1e0, 0e0, 0e0, 0e0), 'row copy ok';
+  ok gsl_matrix_get_col($v, $m1, 1) == GSL_SUCCESS, 'can get column';
+  is-deeply ( gather for ^4 -> $i { take gsl_vector_get($v, $i) } ), (0e0, 1e0, 0e0, 0e0), 'column copy ok';
+  gsl_vector_set_all($v, 10e0);
+  ok gsl_matrix_set_row($m1, 0, $v) == GSL_SUCCESS, 'can set row';
+  $mm = (10e0 xx 4, gather for 1..^4 -> $i { for ^4 -> $j { take gsl_matrix_get($m2, $i, $j) } }).flat;
+  is-deeply ( gather for ^4 -> $i { for ^4 -> $j { take gsl_matrix_get($m1, $i, $j) } } ), $mm.flat, 'set row ok';
+  gsl_matrix_set_identity($m1);
+  ok gsl_matrix_set_col($m1, 0, $v) == GSL_SUCCESS, 'can set column';
+  $mm = (gather for ^4 -> $i { take 10e0; for 1..^4 -> $j { take gsl_matrix_get($m2, $i, $j) } }).flat;
+  is-deeply ( gather for ^4 -> $i { for ^4 -> $j { take gsl_matrix_get($m1, $i, $j) } } ), $mm.flat, 'set column ok';
+  gsl_matrix_free($m1);
+  gsl_matrix_free($m2);
+  gsl_vector_free($v);
+}, 'matrix copy';
+
+subtest {
+  my gsl_matrix $m = gsl_matrix_alloc(4, 4);
+  gsl_matrix_set_identity($m);
+  ok gsl_matrix_swap_rows($m, 0, 1) == GSL_SUCCESS, 'can swap rows';
+  is-deeply ( gather for ^4 -> $i { take gsl_matrix_get($m, 1, $i) } ), (1e0, 0e0, 0e0, 0e0), 'row swap ok';
+  ok gsl_matrix_swap_columns($m, 0, 1) == GSL_SUCCESS, 'can swap columns';
+  is-deeply ( gather for ^4 -> $i { take gsl_matrix_get($m, $i, 1) } ), (0e0, 1e0, 0e0, 0e0), 'column swap ok';
+  gsl_matrix_set_identity($m);
+  ok gsl_matrix_swap_rowcol($m, 0, 1) == GSL_SUCCESS, 'can swap row and columns';
+  is-deeply ( gather for ^4 -> $i { take gsl_matrix_get($m, 0, $i) } ), (0e0, 1e0, 0e0, 0e0), 'row and column swap ok';
+  my gsl_matrix $md = gsl_matrix_alloc(4, 4);
+  gsl_matrix_set_zero($m);
+  gsl_matrix_set($m, 0, $_, 10e0) for ^4;
+  ok gsl_matrix_transpose_memcpy($md, $m) == GSL_SUCCESS, 'can transpose and copy';
+  is-deeply ( gather for ^4 -> $i { take gsl_matrix_get($md, $i, 0) } ), (10e0, 10e0, 10e0, 10e0), 'transpose and copy ok';
+  ok gsl_matrix_transpose($m) == GSL_SUCCESS, 'can transpose in-place';
+  is-deeply ( gather for ^4 -> $i { take gsl_matrix_get($m, $i, 0) } ), (10e0, 10e0, 10e0, 10e0), 'transpose in-place ok';
+  gsl_matrix_free($m);
+  gsl_matrix_free($md);
+}, 'matrix row and column exchange';
+
+subtest {
+  my gsl_matrix $m1 = gsl_matrix_alloc(4, 4);
+  my gsl_matrix $m2 = gsl_matrix_alloc(4, 4);
+  gsl_matrix_set_all($m1, 4e0);
+  gsl_matrix_set_all($m2, 2e0);
+  ok gsl_matrix_add($m1, $m2) == GSL_SUCCESS, 'can matrix add';
+  is-deeply ( gather for ^4 -> $i { take gsl_matrix_get($m1, $i, 0) } ), (6e0, 6e0, 6e0, 6e0), 'matrix add ok';
+  ok gsl_matrix_sub($m1, $m2) == GSL_SUCCESS, 'can matrix sub';
+  is-deeply ( gather for ^4 -> $i { take gsl_matrix_get($m1, $i, 0) } ), (4e0, 4e0, 4e0, 4e0), 'matrix sub ok';
+  ok gsl_matrix_mul_elements($m1, $m2) == GSL_SUCCESS, 'can matrix mul';
+  is-deeply ( gather for ^4 -> $i { take gsl_matrix_get($m1, $i, 0) } ), (8e0, 8e0, 8e0, 8e0), 'matrix mul ok';
+  ok gsl_matrix_div_elements($m1, $m2) == GSL_SUCCESS, 'can matrix div';
+  is-deeply ( gather for ^4 -> $i { take gsl_matrix_get($m1, $i, 0) } ), (4e0, 4e0, 4e0, 4e0), 'matrix div ok';
+  ok gsl_matrix_scale($m1, .5e0) == GSL_SUCCESS, 'can matrix scale';
+  is-deeply ( gather for ^4 -> $i { take gsl_matrix_get($m1, $i, 0) } ), (2e0, 2e0, 2e0, 2e0), 'matrix scale ok';
+  ok gsl_matrix_add_constant($m1, 2e0) == GSL_SUCCESS, 'can matrix add constant';
+  is-deeply ( gather for ^4 -> $i { take gsl_matrix_get($m1, $i, 0) } ), (4e0, 4e0, 4e0, 4e0), 'matrix add constant ok';
+  gsl_matrix_free($m1);
+  gsl_matrix_free($m2);
+}, 'matrix operations';
+
+subtest {
+  my gsl_matrix $m = gsl_matrix_alloc(4, 4);
+  for ^4 -> $i { for ^4 -> $j { gsl_matrix_set($m, $i, $j, $i * 4e0 + $j) } }
+  ok gsl_matrix_max($m) == 15, 'can find matrix max';
+  ok gsl_matrix_min($m) == 0, 'can find matrix min';
+  my num64 ($min, $max);
+  lives-ok { gsl_matrix_minmax($m, $min, $max) }, 'can find min and max';
+  ok { $min == 0 && $max == 15 }, 'mix and max value ok';
+  my size_t ($imax, $jmax);
+  lives-ok { gsl_matrix_max_index($m, $imax, $jmax) }, 'can find max indices';
+  ok { $imax == 3 && $jmax == 3 }, 'max indices ok';
+  my size_t ($imin, $jmin);
+  lives-ok { gsl_matrix_min_index($m, $imin, $jmin) }, 'can find min indices';
+  ok { $imin == 0 && $jmin == 0 }, 'min indices ok';
+  lives-ok { gsl_matrix_minmax_index($m, $imin, $jmin, $imax, $jmax) }, 'can find min and max indices';
+  ok { $imin == 0 && $jmin == 0 && $imax == 3 && $jmax == 3 }, 'min and max indices ok';
+  gsl_matrix_free($m);
+}, 'matrix min & max';
+
+subtest {
+  my gsl_matrix $m1 = gsl_matrix_alloc(4, 4);
+  gsl_matrix_set_zero($m1);
+  ok gsl_matrix_isnull($m1) == 1, 'matrix isnull ok';
+  nok gsl_matrix_ispos($m1) == 1, 'matrix ispos ok';
+  nok gsl_matrix_isneg($m1) == 1, 'matrix isneg ok';
+  ok gsl_matrix_isnonneg($m1) == 1, 'matrix isnonneg ok';
+  my gsl_matrix $m2 = gsl_matrix_alloc(4, 4);
+  gsl_matrix_set_zero($m2);
+  ok gsl_matrix_equal($m1, $m2) == 1, 'matrix equal ok';
+  gsl_matrix_free($m1);
+  gsl_matrix_free($m2);
+}, 'matrix properties';
+
+done-testing;
