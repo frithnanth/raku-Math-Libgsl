@@ -20,6 +20,8 @@ class gsl_complex_float is repr('CStruct') is export {
 # Representation
 sub alloc_gsl_complex(--> gsl_complex) is native(GSLHELPER) is export { * }
 sub free_gsl_complex(gsl_complex $c) is native(GSLHELPER) is export { * }
+sub alloc_gsl_complex_float(--> gsl_complex_float) is native(GSLHELPER) is export { * }
+sub free_gsl_complex_float(gsl_complex_float $c) is native(GSLHELPER) is export { * }
 sub mgsl_complex_rect(num64 $x, num64 $y, gsl_complex $c) is native(GSLHELPER) is export { * }
 sub mgsl_complex_polar(num64 $r, num64 $theta, gsl_complex $c) is native(GSLHELPER) is export { * }
 # Properties

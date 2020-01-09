@@ -14,6 +14,17 @@ void free_gsl_complex(gsl_complex *c)
   free(c);
 }
 
+gsl_complex *alloc_gsl_complex_float(void)
+{
+  gsl_complex *c = malloc(sizeof(gsl_complex_float));
+  return c;
+}
+
+void free_gsl_complex_float(gsl_complex_float *c)
+{
+  free(c);
+}
+
 void mgsl_complex_rect(double x, double y, gsl_complex *res)
 {
   gsl_complex ret = gsl_complex_rect(x, y);
