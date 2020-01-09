@@ -34,7 +34,7 @@ class Float {
   method scanf(Str $filename! --> Int) { mgsl_block_float_fscanf($filename, $!block) }
 }
 
-class Int {
+class Int32 {
   has gsl_block_int $.block;
 
   multi method new(Int $size!) { self.bless(:$size) }
@@ -49,7 +49,7 @@ class Int {
   method scanf(Str $filename! --> Int) { mgsl_block_int_fscanf($filename, $!block) }
 }
 
-class UInt {
+class UInt32 {
   has gsl_block_uint $.block;
 
   multi method new(Int $size!) { self.bless(:$size) }
@@ -154,7 +154,7 @@ class UChar {
   method scanf(Str $filename! --> Int) { mgsl_block_uchar_fscanf($filename, $!block) }
 }
 
-class Complex {
+class Complex64 {
   has gsl_block_complex $.block;
 
   multi method new(Int $size!) { self.bless(:$size) }
@@ -169,7 +169,7 @@ class Complex {
   method scanf(Str $filename! --> Int) { mgsl_block_complex_fscanf($filename, $!block) }
 }
 
-class ComplexFloat {
+class Complex32 {
   has gsl_block_complex_float $.block;
 
   multi method new(Int $size!) { self.bless(:$size) }
