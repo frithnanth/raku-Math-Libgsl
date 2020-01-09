@@ -11,7 +11,7 @@ subtest {
   ok $v1.vector.size == 10, 'attributes ok';
   my Math::Libgsl::Vector $v2 .= new(10);
   isa-ok $v2, Math::Libgsl::Vector, 'new using single value';
-}, 'vector';
+}, 'vector allocation';
 
 subtest {
   my Math::Libgsl::Vector $v1 .= new(:size(10));
@@ -43,19 +43,84 @@ subtest {
 
 subtest {
   my Math::Libgsl::Vector $v1 .= new(:size(10));
+  $v1.setall(1);
+  my Math::Libgsl::Vector $vv1;
+  lives-ok { $vv1 = $v1.subvector(0, 3) }, 'create subvector';
+  $vv1.setall(12);
+  is-deeply $v1[^10], (12e0 xx 3, 1e0 xx 7).flat, 'modify vector using subvector';
+  $v1.setall(1);
+  my Math::Libgsl::Vector $vv2;
+  lives-ok { $vv2 = $v1.subvector-stride(0, 2, 3) }, 'create subvector with stride';
+  $vv2.setall(12);
+  is-deeply $v1[^10], ((12e0, 1e0) xx 3, 1e0 xx 4).flat, 'modify vector using subvector with stride';
+  my @a = 1 xx 10;
+  my Math::Libgsl::Vector $vv3;
+  lives-ok { $vv3 = view-array @a }, 'create array using vector view';
+  is-deeply $vv3[^10], (1e0 xx 10).flat, 'verify array using vector view';
+  my Math::Libgsl::Vector $vv4;
+  lives-ok { $vv4 = view-array-stride @a, 2 }, 'create array with stride using vector view';
+  is-deeply $vv4[^5], (1e0 xx 5).flat, 'verify array with stride using vector view';
+}, 'views';
+
+subtest {
+  my Math::Libgsl::Vector $v1 .= new(:size(10));
   $v1.set($_, $_.Num) for ^10;
-  my Math::Libgsl::Vector $vv = $v1.subvector(1, 3);
-  isa-ok $vv, Math::Libgsl::Vector, 'subvector view';
-  $vv[1] = 42;
-  is-deeply $v1[^10], (0, 1, 42, 3..9).flat».Num, 'vector can be written through view';
-  $vv = $v1.subvector-stride(1, 2, 4);
-  isa-ok $vv, Math::Libgsl::Vector, 'subvector view with stride';
-  is-deeply $vv[^2], (1e0, 5e0), 'subvector with stride checks';
-  my Num @array = 1e0..10e0;
-  my $av = $v1.subarray(@array);
-  is-deeply $av[^10], (1e0..10e0).flat, 'subarray';
-  my $avs= $v1.subarray-stride(4, @array);
-  is-deeply $avs[^3], (1e0, 5e0, 9e0), 'subarray with stride';
-}, 'vector views';
+  my Math::Libgsl::Vector $v2 .= new(:size(10));
+  ok $v2.copy($v1) == GSL_SUCCESS, 'can copy';
+  is-deeply $v2[^10], (0..9).flat».Num, 'copy ok';
+  $v2.zero;
+  ok $v1.swap($v2) == GSL_SUCCESS, 'can swap';
+  is-deeply $v1[^10], (0e0 xx 10), 'swap ok';
+}, 'vector copy';
+
+subtest {
+  my Math::Libgsl::Vector $v1 .= new(:size(10));
+  $v1.set($_, $_.Num) for ^10;
+  ok $v1.swap-elems(0, 1) == GSL_SUCCESS, 'can exchange elements';
+  is-deeply $v1[^10], (1e0, 0e0, 2e0..9e0).flat, 'swap elements ok';
+  $v1.set($_, $_.Num) for ^10;
+  ok $v1.reverse == GSL_SUCCESS, 'can reverse elements';
+  is-deeply $v1[^10], (9e0…0e0).flat, 'reverse elements ok';
+}, 'element exchange';
+
+subtest {
+  my Math::Libgsl::Vector $v1 .= new(:size(10));
+  $v1.setall(4);
+  my Math::Libgsl::Vector $v2 .= new(:size(10));
+  $v2.setall(2);
+  ok $v1.add($v2) == GSL_SUCCESS, 'can add';
+  is-deeply $v1[^10], (6e0 xx 10), 'add ok';
+  ok $v1.sub($v2) == GSL_SUCCESS, 'can sub';
+  is-deeply $v1[^10], (4e0 xx 10), 'sub ok';
+  ok $v1.mul($v2) == GSL_SUCCESS, 'can mul';
+  is-deeply $v1[^10], (8e0 xx 10), 'mul ok';
+  ok $v1.div($v2) == GSL_SUCCESS, 'can div';
+  is-deeply $v1[^10], (4e0 xx 10), 'div ok';
+}, 'vector operations';
+
+subtest {
+  my Math::Libgsl::Vector $v1 .= new(:size(10));
+  $v1.set($_, $_.Num) for ^10;
+  ok $v1.max == 9e0, 'max element';
+  ok $v1.min == 0e0, 'min element';
+  is-deeply $v1.minmax, (0e0, 9e0), 'min & max elements';
+  ok $v1.max-index == 9, 'index of max element';
+  ok $v1.min-index == 0, 'index of min element';
+  is-deeply $v1.minmax-index, (0, 9), 'index of min & max elements';
+}, 'vector min & max';
+
+subtest {
+  my Math::Libgsl::Vector $v1 .= new(:size(10));
+  ok $v1.is-null, 'all elements of v are 0';
+  $v1.setall(2e0);
+  ok $v1.is-pos, 'all elements of v are >0';
+  $v1.set(0, 0e0);
+  nok $v1.is-pos, 'fails if not all elements of v are >0';
+  $v1.setall(-2e0);
+  ok $v1.is-neg, 'all elements of v are <0';
+  my Math::Libgsl::Vector $v2 .= new(:size(10));
+  $v2.setall(-2e0);
+  ok $v1.is-equal($v2), 'two vectors are equal';
+}, 'vector properties';
 
 done-testing;
