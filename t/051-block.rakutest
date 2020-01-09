@@ -33,3 +33,4 @@ subtest {
   is-deeply $filename.IO.lines, '0.0' xx 10, 'block file ok';
 }, 'float block';
 
+done-testing;
