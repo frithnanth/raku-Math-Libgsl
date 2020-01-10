@@ -907,6 +907,18 @@ gsl_vector *mgsl_vector_complex_imag(gsl_vector_view *view, gsl_vector_complex *
   return &view->vector;
 }
 
+gsl_vector_float *mgsl_vector_complex_float_real(gsl_vector_float_view *view, gsl_vector_complex_float *v)
+{
+  *view = gsl_vector_complex_float_real(v);
+  return &view->vector;
+}
+
+gsl_vector_float *mgsl_vector_complex_float_imag(gsl_vector_float_view *view, gsl_vector_complex_float *v)
+{
+  *view = gsl_vector_complex_float_imag(v);
+  return &view->vector;
+}
+
 gsl_vector *mgsl_vector_view_array(gsl_vector_view *view, double *base, size_t n)
 {
   *view = gsl_vector_view_array(base, n);

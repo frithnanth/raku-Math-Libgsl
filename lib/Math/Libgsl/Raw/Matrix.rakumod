@@ -611,6 +611,8 @@ sub mgsl_vector_subvector(gsl_vector_view $view, gsl_vector $v, size_t $offset, 
 sub mgsl_vector_subvector_with_stride(gsl_vector_view $view, gsl_vector $v, size_t $offset, size_t $stride, size_t $n --> gsl_vector) is native(GSLHELPER) is export(:vectorview) { * }
 sub mgsl_vector_complex_real(gsl_vector_view $view, gsl_vector_complex $v --> gsl_vector) is native(GSLHELPER) is export(:vectorview) { * }
 sub mgsl_vector_complex_imag(gsl_vector_view $view, gsl_vector_complex $v --> gsl_vector) is native(GSLHELPER) is export(:vectorview) { * }
+sub mgsl_vector_complex_float_real(gsl_vector_float_view $view, gsl_vector_complex_float $v --> gsl_vector_float) is native(GSLHELPER) is export(:vectorview) { * }
+sub mgsl_vector_complex_float_imag(gsl_vector_float_view $view, gsl_vector_complex_float $v --> gsl_vector_float) is native(GSLHELPER) is export(:vectorview) { * }
 sub mgsl_vector_view_array(gsl_vector_view $view, CArray[num64] $base, size_t $n --> gsl_vector) is native(GSLHELPER) is export(:vectorview) { * }
 sub mgsl_vector_view_array_with_stride(gsl_vector_view $view, CArray[num64] $base, size_t $stride, size_t $n --> gsl_vector) is native(GSLHELPER) is export(:vectorview) { * }
 sub alloc_gsl_vector_float_view(--> gsl_vector_float_view) is native(GSLHELPER) is export(:vectorview) { * }

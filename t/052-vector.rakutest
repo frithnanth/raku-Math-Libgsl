@@ -60,6 +60,16 @@ subtest {
   my Math::Libgsl::Vector $vv4;
   lives-ok { $vv4 = view-array-stride @a, 2 }, 'create array with stride using vector view';
   is-deeply $vv4[^5], (1e0 xx 5).flat, 'verify array with stride using vector view';
+  my Math::Libgsl::Vector::Complex64 $cv .= new(:size(10));
+  isa-ok $cv, Math::Libgsl::Vector::Complex64, 'new complex vector';
+  lives-ok { $cv.setall(1+2i) }, 'set all elements to complex values';
+  is-deeply $cv[^10], (1+2i xx 10), 'all complex elements set';
+  my Math::Libgsl::Vector $vv5;
+  lives-ok { $vv5 = $cv.complex64-real }, 'create real view from complex vector';
+  is-deeply $vv5[^10], (1e0 xx 10).flat, 'verify real view';
+  my Math::Libgsl::Vector $vv6;
+  lives-ok { $vv6 = $cv.complex64-imag }, 'create imag view from complex vector';
+  is-deeply $vv6[^10], (2e0 xx 10).flat, 'verify imag view';
 }, 'views';
 
 subtest {

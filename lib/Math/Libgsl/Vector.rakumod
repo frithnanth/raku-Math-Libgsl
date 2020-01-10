@@ -1015,6 +1015,14 @@ class Complex64 {
     my CArray[num64] $a .= new: @array».Num;
     Math::Libgsl::Vector::Complex64.new: vector => mgsl_vector_complex_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
+  method complex64-real() {
+    my Math::Libgsl::Vector::View $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_vector_complex_real($vv.view, $!vector);
+  }
+  method complex64-imag() {
+    my Math::Libgsl::Vector::View $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_vector_complex_imag($vv.view, $!vector);
+  }
   # Copy
   method copy(Math::Libgsl::Vector::Complex64 $src --> Int) { gsl_vector_complex_memcpy($!vector, $src.vector) }
   method swap(Math::Libgsl::Vector::Complex64 $w --> Int) { gsl_vector_complex_swap($!vector, $w.vector) }
@@ -1138,6 +1146,14 @@ class Complex32 {
     my Math::Libgsl::Vector::Complex32::View $vv .= new;
     my CArray[num32] $a .= new: @array».Num;
     Math::Libgsl::Vector::Complex32.new: vector => mgsl_vector_complex_float_view_array_with_stride($vv.view, $a, $stride, @array.elems);
+  }
+  method complex32-real() {
+    my Math::Libgsl::Vector::Num32::View $vv .= new;
+    Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_complex_float_real($vv.view, $!vector);
+  }
+  method complex32-imag() {
+    my Math::Libgsl::Vector::Num32::View $vv .= new;
+    Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_complex_float_imag($vv.view, $!vector);
   }
   # Copy
   method copy(Math::Libgsl::Vector::Complex32 $src --> Int) { gsl_vector_complex_float_memcpy($!vector, $src.vector) }
