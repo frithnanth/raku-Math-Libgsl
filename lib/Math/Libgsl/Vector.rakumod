@@ -96,7 +96,7 @@ method is-neg(--> Bool)    { gsl_vector_isneg($!vector)    ?? True !! False }
 method is-nonneg(--> Bool) { gsl_vector_isnonneg($!vector) ?? True !! False }
 method is-equal(Math::Libgsl::Vector $b --> Bool) { gsl_vector_equal($!vector, $b.vector) ?? True !! False }
 
-class Float {
+class Num32 {
   class View {
     has gsl_vector_float_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_float_view }
@@ -119,10 +119,10 @@ class Float {
   }
   # Accessors
   method get(Int:D $index! --> Num) { gsl_vector_float_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Float:D: Int:D $index! --> Num) { gsl_vector_float_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Float:D: Range:D $range! --> List) { gsl_vector_float_get(self.vector, $_) for $range }
+  multi method AT-POS(Math::Libgsl::Vector::Num32:D: Int:D $index! --> Num) { gsl_vector_float_get(self.vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::Num32:D: Range:D $range! --> List) { gsl_vector_float_get(self.vector, $_) for $range }
   method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_float_set($!vector, $index, $x) }
-  method ASSIGN-POS(Math::Libgsl::Vector::Float:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_float_set(self.vector, $index, $x) }
+  method ASSIGN-POS(Math::Libgsl::Vector::Num32:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_float_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_float_set_all($!vector, $x) }
   method zero() { gsl_vector_float_set_zero($!vector) }
   method basis(Int:D $index! --> Int) { gsl_vector_float_set_basis($!vector, $index) }
@@ -133,34 +133,34 @@ class Float {
   method scanf(Str $filename! --> Int) { mgsl_vector_float_fscanf($filename, $!vector) }
   # View
   method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::Float::View $vv .= new;
-    Math::Libgsl::Vector::Float.new: vector => mgsl_vector_float_subvector($vv.view, $!vector, $offset, $n);
+    my Math::Libgsl::Vector::Num32::View $vv .= new;
+    Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_float_subvector($vv.view, $!vector, $offset, $n);
   }
   method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::Float::View $vv .= new;
-    Math::Libgsl::Vector::Float.new: vector => mgsl_vector_float_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
+    my Math::Libgsl::Vector::Num32::View $vv .= new;
+    Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_float_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-float-array(@array) is export {
-    my Math::Libgsl::Vector::Float::View $vv .= new;
+    my Math::Libgsl::Vector::Num32::View $vv .= new;
     my CArray[num32] $a .= new: @array».Num;
-    Math::Libgsl::Vector::Float.new: vector => mgsl_vector_float_view_array($vv.view, $a, @array.elems);
+    Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_float_view_array($vv.view, $a, @array.elems);
   }
   sub view-float-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::Float::View $vv .= new;
+    my Math::Libgsl::Vector::Num32::View $vv .= new;
     my CArray[num32] $a .= new: @array».Num;
-    Math::Libgsl::Vector::Float.new: vector => mgsl_vector_float_view_array_with_stride($vv.view, $a, $stride, @array.elems);
+    Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_float_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Float $src --> Int) { gsl_vector_float_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::Float $w --> Int) { gsl_vector_float_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::Num32 $src --> Int) { gsl_vector_float_memcpy($!vector, $src.vector) }
+  method swap(Math::Libgsl::Vector::Num32 $w --> Int) { gsl_vector_float_swap($!vector, $w.vector) }
   # Exchanging elements
   method swap-elems(Int $i, Int $j --> Int) { gsl_vector_float_swap_elements($!vector, $i, $j) }
   method reverse(--> Int) { gsl_vector_float_reverse($!vector) }
   # Vector operations
-  method add(Math::Libgsl::Vector::Float $b --> Int) { gsl_vector_float_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::Float $b --> Int) { gsl_vector_float_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::Float $b --> Int) { gsl_vector_float_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::Float $b --> Int) { gsl_vector_float_div($!vector, $b.vector) }
+  method add(Math::Libgsl::Vector::Num32 $b --> Int) { gsl_vector_float_add($!vector, $b.vector) }
+  method sub(Math::Libgsl::Vector::Num32 $b --> Int) { gsl_vector_float_sub($!vector, $b.vector) }
+  method mul(Math::Libgsl::Vector::Num32 $b --> Int) { gsl_vector_float_mul($!vector, $b.vector) }
+  method div(Math::Libgsl::Vector::Num32 $b --> Int) { gsl_vector_float_div($!vector, $b.vector) }
   method scale(Num(Cool) $x --> Int) { gsl_vector_float_scale($!vector, $x) }
   method add-constant(Num(Cool) $x --> Int) { gsl_vector_float_add_constant($!vector, $x) }
   # Finding maximum and minimum elements of vectors
@@ -185,7 +185,7 @@ class Float {
   method is-pos(--> Bool)    { gsl_vector_float_ispos($!vector)    ?? True !! False }
   method is-neg(--> Bool)    { gsl_vector_float_isneg($!vector)    ?? True !! False }
   method is-nonneg(--> Bool) { gsl_vector_float_isnonneg($!vector) ?? True !! False }
-  method is-equal(Math::Libgsl::Vector::Float $b --> Bool) { gsl_vector_float_equal($!vector, $b.vector) ?? True !! False }
+  method is-equal(Math::Libgsl::Vector::Num32 $b --> Bool) { gsl_vector_float_equal($!vector, $b.vector) ?? True !! False }
 }
 
 class Int32 {
@@ -372,7 +372,7 @@ class UInt32 {
   method is-equal(Math::Libgsl::Vector::UInt32 $b --> Bool) { gsl_vector_uint_equal($!vector, $b.vector) ?? True !! False }
 }
 
-class Long {
+class Int64 {
   class View {
     has gsl_vector_long_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_long_view }
@@ -395,10 +395,10 @@ class Long {
   }
   # Accessors
   method get(Int:D $index! --> Num) { gsl_vector_long_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Long:D: Int:D $index! --> Num) { gsl_vector_long_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Long:D: Range:D $range! --> List) { gsl_vector_long_get(self.vector, $_) for $range }
+  multi method AT-POS(Math::Libgsl::Vector::Int64:D: Int:D $index! --> Num) { gsl_vector_long_get(self.vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::Int64:D: Range:D $range! --> List) { gsl_vector_long_get(self.vector, $_) for $range }
   method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_long_set($!vector, $index, $x) }
-  method ASSIGN-POS(Math::Libgsl::Vector::Long:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_long_set(self.vector, $index, $x) }
+  method ASSIGN-POS(Math::Libgsl::Vector::Int64:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_long_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_long_set_all($!vector, $x) }
   method zero() { gsl_vector_long_set_zero($!vector) }
   method basis(Int:D $index! --> Int) { gsl_vector_long_set_basis($!vector, $index) }
@@ -409,34 +409,34 @@ class Long {
   method scanf(Str $filename! --> Int) { mgsl_vector_long_fscanf($filename, $!vector) }
   # View
   method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::Long::View $vv .= new;
-    Math::Libgsl::Vector::Long.new: vector => mgsl_vector_long_subvector($vv.view, $!vector, $offset, $n);
+    my Math::Libgsl::Vector::Int64::View $vv .= new;
+    Math::Libgsl::Vector::Int64.new: vector => mgsl_vector_long_subvector($vv.view, $!vector, $offset, $n);
   }
   method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::Long::View $vv .= new;
-    Math::Libgsl::Vector::Long.new: vector => mgsl_vector_long_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
+    my Math::Libgsl::Vector::Int64::View $vv .= new;
+    Math::Libgsl::Vector::Int64.new: vector => mgsl_vector_long_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-long-array(@array) is export {
-    my Math::Libgsl::Vector::Long::View $vv .= new;
+    my Math::Libgsl::Vector::Int64::View $vv .= new;
     my CArray[int64] $a .= new: @array».Num;
-    Math::Libgsl::Vector::Long.new: vector => mgsl_vector_long_view_array($vv.view, $a, @array.elems);
+    Math::Libgsl::Vector::Int64.new: vector => mgsl_vector_long_view_array($vv.view, $a, @array.elems);
   }
   sub view-long-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::Long::View $vv .= new;
+    my Math::Libgsl::Vector::Int64::View $vv .= new;
     my CArray[int64] $a .= new: @array».Num;
-    Math::Libgsl::Vector::Long.new: vector => mgsl_vector_long_view_array_with_stride($vv.view, $a, $stride, @array.elems);
+    Math::Libgsl::Vector::Int64.new: vector => mgsl_vector_long_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Long $src --> Int) { gsl_vector_long_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::Long $w --> Int) { gsl_vector_long_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::Int64 $src --> Int) { gsl_vector_long_memcpy($!vector, $src.vector) }
+  method swap(Math::Libgsl::Vector::Int64 $w --> Int) { gsl_vector_long_swap($!vector, $w.vector) }
   # Exchanging elements
   method swap-elems(Int $i, Int $j --> Int) { gsl_vector_long_swap_elements($!vector, $i, $j) }
   method reverse(--> Int) { gsl_vector_long_reverse($!vector) }
   # Vector operations
-  method add(Math::Libgsl::Vector::Long $b --> Int) { gsl_vector_long_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::Long $b --> Int) { gsl_vector_long_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::Long $b --> Int) { gsl_vector_long_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::Long $b --> Int) { gsl_vector_long_div($!vector, $b.vector) }
+  method add(Math::Libgsl::Vector::Int64 $b --> Int) { gsl_vector_long_add($!vector, $b.vector) }
+  method sub(Math::Libgsl::Vector::Int64 $b --> Int) { gsl_vector_long_sub($!vector, $b.vector) }
+  method mul(Math::Libgsl::Vector::Int64 $b --> Int) { gsl_vector_long_mul($!vector, $b.vector) }
+  method div(Math::Libgsl::Vector::Int64 $b --> Int) { gsl_vector_long_div($!vector, $b.vector) }
   method scale(Num(Cool) $x --> Int) { gsl_vector_long_scale($!vector, $x) }
   method add-constant(Num(Cool) $x --> Int) { gsl_vector_long_add_constant($!vector, $x) }
   # Finding maximum and minimum elements of vectors
@@ -461,10 +461,10 @@ class Long {
   method is-pos(--> Bool)    { gsl_vector_long_ispos($!vector)    ?? True !! False }
   method is-neg(--> Bool)    { gsl_vector_long_isneg($!vector)    ?? True !! False }
   method is-nonneg(--> Bool) { gsl_vector_long_isnonneg($!vector) ?? True !! False }
-  method is-equal(Math::Libgsl::Vector::Long $b --> Bool) { gsl_vector_long_equal($!vector, $b.vector) ?? True !! False }
+  method is-equal(Math::Libgsl::Vector::Int64 $b --> Bool) { gsl_vector_long_equal($!vector, $b.vector) ?? True !! False }
 }
 
-class ULong {
+class UInt64 {
   class View {
     has gsl_vector_ulong_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_ulong_view }
@@ -487,10 +487,10 @@ class ULong {
   }
   # Accessors
   method get(Int:D $index! --> Num) { gsl_vector_ulong_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::ULong:D: Int:D $index! --> Num) { gsl_vector_ulong_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::ULong:D: Range:D $range! --> List) { gsl_vector_ulong_get(self.vector, $_) for $range }
+  multi method AT-POS(Math::Libgsl::Vector::UInt64:D: Int:D $index! --> Num) { gsl_vector_ulong_get(self.vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::UInt64:D: Range:D $range! --> List) { gsl_vector_ulong_get(self.vector, $_) for $range }
   method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_ulong_set($!vector, $index, $x) }
-  method ASSIGN-POS(Math::Libgsl::Vector::ULong:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_ulong_set(self.vector, $index, $x) }
+  method ASSIGN-POS(Math::Libgsl::Vector::UInt64:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_ulong_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_ulong_set_all($!vector, $x) }
   method zero() { gsl_vector_ulong_set_zero($!vector) }
   method basis(Int:D $index! --> Int) { gsl_vector_ulong_set_basis($!vector, $index) }
@@ -501,34 +501,34 @@ class ULong {
   method scanf(Str $filename! --> Int) { mgsl_vector_ulong_fscanf($filename, $!vector) }
   # View
   method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::ULong::View $vv .= new;
-    Math::Libgsl::Vector::ULong.new: vector => mgsl_vector_ulong_subvector($vv.view, $!vector, $offset, $n);
+    my Math::Libgsl::Vector::UInt64::View $vv .= new;
+    Math::Libgsl::Vector::UInt64.new: vector => mgsl_vector_ulong_subvector($vv.view, $!vector, $offset, $n);
   }
   method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::ULong::View $vv .= new;
-    Math::Libgsl::Vector::ULong.new: vector => mgsl_vector_ulong_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
+    my Math::Libgsl::Vector::UInt64::View $vv .= new;
+    Math::Libgsl::Vector::UInt64.new: vector => mgsl_vector_ulong_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-ulong-array(@array) is export {
-    my Math::Libgsl::Vector::ULong::View $vv .= new;
+    my Math::Libgsl::Vector::UInt64::View $vv .= new;
     my CArray[uint64] $a .= new: @array».Num;
-    Math::Libgsl::Vector::ULong.new: vector => mgsl_vector_ulong_view_array($vv.view, $a, @array.elems);
+    Math::Libgsl::Vector::UInt64.new: vector => mgsl_vector_ulong_view_array($vv.view, $a, @array.elems);
   }
   sub view-ulong-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::ULong::View $vv .= new;
+    my Math::Libgsl::Vector::UInt64::View $vv .= new;
     my CArray[uint64] $a .= new: @array».Num;
-    Math::Libgsl::Vector::ULong.new: vector => mgsl_vector_ulong_view_array_with_stride($vv.view, $a, $stride, @array.elems);
+    Math::Libgsl::Vector::UInt64.new: vector => mgsl_vector_ulong_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::ULong $src --> Int) { gsl_vector_ulong_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::ULong $w --> Int) { gsl_vector_ulong_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::UInt64 $src --> Int) { gsl_vector_ulong_memcpy($!vector, $src.vector) }
+  method swap(Math::Libgsl::Vector::UInt64 $w --> Int) { gsl_vector_ulong_swap($!vector, $w.vector) }
   # Exchanging elements
   method swap-elems(Int $i, Int $j --> Int) { gsl_vector_ulong_swap_elements($!vector, $i, $j) }
   method reverse(--> Int) { gsl_vector_ulong_reverse($!vector) }
   # Vector operations
-  method add(Math::Libgsl::Vector::ULong $b --> Int) { gsl_vector_ulong_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::ULong $b --> Int) { gsl_vector_ulong_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::ULong $b --> Int) { gsl_vector_ulong_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::ULong $b --> Int) { gsl_vector_ulong_div($!vector, $b.vector) }
+  method add(Math::Libgsl::Vector::UInt64 $b --> Int) { gsl_vector_ulong_add($!vector, $b.vector) }
+  method sub(Math::Libgsl::Vector::UInt64 $b --> Int) { gsl_vector_ulong_sub($!vector, $b.vector) }
+  method mul(Math::Libgsl::Vector::UInt64 $b --> Int) { gsl_vector_ulong_mul($!vector, $b.vector) }
+  method div(Math::Libgsl::Vector::UInt64 $b --> Int) { gsl_vector_ulong_div($!vector, $b.vector) }
   method scale(Num(Cool) $x --> Int) { gsl_vector_ulong_scale($!vector, $x) }
   method add-constant(Num(Cool) $x --> Int) { gsl_vector_ulong_add_constant($!vector, $x) }
   # Finding maximum and minimum elements of vectors
@@ -553,10 +553,10 @@ class ULong {
   method is-pos(--> Bool)    { gsl_vector_ulong_ispos($!vector)    ?? True !! False }
   method is-neg(--> Bool)    { gsl_vector_ulong_isneg($!vector)    ?? True !! False }
   method is-nonneg(--> Bool) { gsl_vector_ulong_isnonneg($!vector) ?? True !! False }
-  method is-equal(Math::Libgsl::Vector::ULong $b --> Bool) { gsl_vector_ulong_equal($!vector, $b.vector) ?? True !! False }
+  method is-equal(Math::Libgsl::Vector::UInt64 $b --> Bool) { gsl_vector_ulong_equal($!vector, $b.vector) ?? True !! False }
 }
 
-class Short {
+class Int16 {
   class View {
     has gsl_vector_short_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_short_view }
@@ -579,10 +579,10 @@ class Short {
   }
   # Accessors
   method get(Int:D $index! --> Num) { gsl_vector_short_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Short:D: Int:D $index! --> Num) { gsl_vector_short_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Short:D: Range:D $range! --> List) { gsl_vector_short_get(self.vector, $_) for $range }
+  multi method AT-POS(Math::Libgsl::Vector::Int16:D: Int:D $index! --> Num) { gsl_vector_short_get(self.vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::Int16:D: Range:D $range! --> List) { gsl_vector_short_get(self.vector, $_) for $range }
   method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_short_set($!vector, $index, $x) }
-  method ASSIGN-POS(Math::Libgsl::Vector::Short:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_short_set(self.vector, $index, $x) }
+  method ASSIGN-POS(Math::Libgsl::Vector::Int16:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_short_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_short_set_all($!vector, $x) }
   method zero() { gsl_vector_short_set_zero($!vector) }
   method basis(Int:D $index! --> Int) { gsl_vector_short_set_basis($!vector, $index) }
@@ -593,34 +593,34 @@ class Short {
   method scanf(Str $filename! --> Int) { mgsl_vector_short_fscanf($filename, $!vector) }
   # View
   method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::Short::View $vv .= new;
-    Math::Libgsl::Vector::Short.new: vector => mgsl_vector_short_subvector($vv.view, $!vector, $offset, $n);
+    my Math::Libgsl::Vector::Int16::View $vv .= new;
+    Math::Libgsl::Vector::Int16.new: vector => mgsl_vector_short_subvector($vv.view, $!vector, $offset, $n);
   }
   method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::Short::View $vv .= new;
-    Math::Libgsl::Vector::Short.new: vector => mgsl_vector_short_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
+    my Math::Libgsl::Vector::Int16::View $vv .= new;
+    Math::Libgsl::Vector::Int16.new: vector => mgsl_vector_short_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-short-array(@array) is export {
-    my Math::Libgsl::Vector::Short::View $vv .= new;
+    my Math::Libgsl::Vector::Int16::View $vv .= new;
     my CArray[int16] $a .= new: @array».Num;
-    Math::Libgsl::Vector::Short.new: vector => mgsl_vector_short_view_array($vv.view, $a, @array.elems);
+    Math::Libgsl::Vector::Int16.new: vector => mgsl_vector_short_view_array($vv.view, $a, @array.elems);
   }
   sub view-short-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::Short::View $vv .= new;
+    my Math::Libgsl::Vector::Int16::View $vv .= new;
     my CArray[int16] $a .= new: @array».Num;
-    Math::Libgsl::Vector::Short.new: vector => mgsl_vector_short_view_array_with_stride($vv.view, $a, $stride, @array.elems);
+    Math::Libgsl::Vector::Int16.new: vector => mgsl_vector_short_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Short $src --> Int) { gsl_vector_short_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::Short $w --> Int) { gsl_vector_short_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::Int16 $src --> Int) { gsl_vector_short_memcpy($!vector, $src.vector) }
+  method swap(Math::Libgsl::Vector::Int16 $w --> Int) { gsl_vector_short_swap($!vector, $w.vector) }
   # Exchanging elements
   method swap-elems(Int $i, Int $j --> Int) { gsl_vector_short_swap_elements($!vector, $i, $j) }
   method reverse(--> Int) { gsl_vector_short_reverse($!vector) }
   # Vector operations
-  method add(Math::Libgsl::Vector::Short $b --> Int) { gsl_vector_short_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::Short $b --> Int) { gsl_vector_short_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::Short $b --> Int) { gsl_vector_short_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::Short $b --> Int) { gsl_vector_short_div($!vector, $b.vector) }
+  method add(Math::Libgsl::Vector::Int16 $b --> Int) { gsl_vector_short_add($!vector, $b.vector) }
+  method sub(Math::Libgsl::Vector::Int16 $b --> Int) { gsl_vector_short_sub($!vector, $b.vector) }
+  method mul(Math::Libgsl::Vector::Int16 $b --> Int) { gsl_vector_short_mul($!vector, $b.vector) }
+  method div(Math::Libgsl::Vector::Int16 $b --> Int) { gsl_vector_short_div($!vector, $b.vector) }
   method scale(Num(Cool) $x --> Int) { gsl_vector_short_scale($!vector, $x) }
   method add-constant(Num(Cool) $x --> Int) { gsl_vector_short_add_constant($!vector, $x) }
   # Finding maximum and minimum elements of vectors
@@ -645,10 +645,10 @@ class Short {
   method is-pos(--> Bool)    { gsl_vector_short_ispos($!vector)    ?? True !! False }
   method is-neg(--> Bool)    { gsl_vector_short_isneg($!vector)    ?? True !! False }
   method is-nonneg(--> Bool) { gsl_vector_short_isnonneg($!vector) ?? True !! False }
-  method is-equal(Math::Libgsl::Vector::Short $b --> Bool) { gsl_vector_short_equal($!vector, $b.vector) ?? True !! False }
+  method is-equal(Math::Libgsl::Vector::Int16 $b --> Bool) { gsl_vector_short_equal($!vector, $b.vector) ?? True !! False }
 }
 
-class UShort {
+class UInt16 {
   class View {
     has gsl_vector_ushort_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_ushort_view }
@@ -671,10 +671,10 @@ class UShort {
   }
   # Accessors
   method get(Int:D $index! --> Num) { gsl_vector_ushort_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::UShort:D: Int:D $index! --> Num) { gsl_vector_ushort_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::UShort:D: Range:D $range! --> List) { gsl_vector_ushort_get(self.vector, $_) for $range }
+  multi method AT-POS(Math::Libgsl::Vector::UInt16:D: Int:D $index! --> Num) { gsl_vector_ushort_get(self.vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::UInt16:D: Range:D $range! --> List) { gsl_vector_ushort_get(self.vector, $_) for $range }
   method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_ushort_set($!vector, $index, $x) }
-  method ASSIGN-POS(Math::Libgsl::Vector::UShort:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_ushort_set(self.vector, $index, $x) }
+  method ASSIGN-POS(Math::Libgsl::Vector::UInt16:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_ushort_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_ushort_set_all($!vector, $x) }
   method zero() { gsl_vector_ushort_set_zero($!vector) }
   method basis(Int:D $index! --> Int) { gsl_vector_ushort_set_basis($!vector, $index) }
@@ -685,34 +685,34 @@ class UShort {
   method scanf(Str $filename! --> Int) { mgsl_vector_ushort_fscanf($filename, $!vector) }
   # View
   method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::UShort::View $vv .= new;
-    Math::Libgsl::Vector::UShort.new: vector => mgsl_vector_ushort_subvector($vv.view, $!vector, $offset, $n);
+    my Math::Libgsl::Vector::UInt16::View $vv .= new;
+    Math::Libgsl::Vector::UInt16.new: vector => mgsl_vector_ushort_subvector($vv.view, $!vector, $offset, $n);
   }
   method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::UShort::View $vv .= new;
-    Math::Libgsl::Vector::UShort.new: vector => mgsl_vector_ushort_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
+    my Math::Libgsl::Vector::UInt16::View $vv .= new;
+    Math::Libgsl::Vector::UInt16.new: vector => mgsl_vector_ushort_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-ushort-array(@array) is export {
-    my Math::Libgsl::Vector::UShort::View $vv .= new;
+    my Math::Libgsl::Vector::UInt16::View $vv .= new;
     my CArray[uint16] $a .= new: @array».Num;
-    Math::Libgsl::Vector::UShort.new: vector => mgsl_vector_ushort_view_array($vv.view, $a, @array.elems);
+    Math::Libgsl::Vector::UInt16.new: vector => mgsl_vector_ushort_view_array($vv.view, $a, @array.elems);
   }
   sub view-ushort-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::UShort::View $vv .= new;
+    my Math::Libgsl::Vector::UInt16::View $vv .= new;
     my CArray[uint16] $a .= new: @array».Num;
-    Math::Libgsl::Vector::UShort.new: vector => mgsl_vector_ushort_view_array_with_stride($vv.view, $a, $stride, @array.elems);
+    Math::Libgsl::Vector::UInt16.new: vector => mgsl_vector_ushort_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::UShort $src --> Int) { gsl_vector_ushort_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::UShort $w --> Int) { gsl_vector_ushort_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::UInt16 $src --> Int) { gsl_vector_ushort_memcpy($!vector, $src.vector) }
+  method swap(Math::Libgsl::Vector::UInt16 $w --> Int) { gsl_vector_ushort_swap($!vector, $w.vector) }
   # Exchanging elements
   method swap-elems(Int $i, Int $j --> Int) { gsl_vector_ushort_swap_elements($!vector, $i, $j) }
   method reverse(--> Int) { gsl_vector_ushort_reverse($!vector) }
   # Vector operations
-  method add(Math::Libgsl::Vector::UShort $b --> Int) { gsl_vector_ushort_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::UShort $b --> Int) { gsl_vector_ushort_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::UShort $b --> Int) { gsl_vector_ushort_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::UShort $b --> Int) { gsl_vector_ushort_div($!vector, $b.vector) }
+  method add(Math::Libgsl::Vector::UInt16 $b --> Int) { gsl_vector_ushort_add($!vector, $b.vector) }
+  method sub(Math::Libgsl::Vector::UInt16 $b --> Int) { gsl_vector_ushort_sub($!vector, $b.vector) }
+  method mul(Math::Libgsl::Vector::UInt16 $b --> Int) { gsl_vector_ushort_mul($!vector, $b.vector) }
+  method div(Math::Libgsl::Vector::UInt16 $b --> Int) { gsl_vector_ushort_div($!vector, $b.vector) }
   method scale(Num(Cool) $x --> Int) { gsl_vector_ushort_scale($!vector, $x) }
   method add-constant(Num(Cool) $x --> Int) { gsl_vector_ushort_add_constant($!vector, $x) }
   # Finding maximum and minimum elements of vectors
@@ -737,10 +737,10 @@ class UShort {
   method is-pos(--> Bool)    { gsl_vector_ushort_ispos($!vector)    ?? True !! False }
   method is-neg(--> Bool)    { gsl_vector_ushort_isneg($!vector)    ?? True !! False }
   method is-nonneg(--> Bool) { gsl_vector_ushort_isnonneg($!vector) ?? True !! False }
-  method is-equal(Math::Libgsl::Vector::UShort $b --> Bool) { gsl_vector_ushort_equal($!vector, $b.vector) ?? True !! False }
+  method is-equal(Math::Libgsl::Vector::UInt16 $b --> Bool) { gsl_vector_ushort_equal($!vector, $b.vector) ?? True !! False }
 }
 
-class Char {
+class Int8 {
   class View {
     has gsl_vector_char_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_char_view }
@@ -763,10 +763,10 @@ class Char {
   }
   # Accessors
   method get(Int:D $index! --> Num) { gsl_vector_char_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Char:D: Int:D $index! --> Num) { gsl_vector_char_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Char:D: Range:D $range! --> List) { gsl_vector_char_get(self.vector, $_) for $range }
+  multi method AT-POS(Math::Libgsl::Vector::Int8:D: Int:D $index! --> Num) { gsl_vector_char_get(self.vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::Int8:D: Range:D $range! --> List) { gsl_vector_char_get(self.vector, $_) for $range }
   method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_char_set($!vector, $index, $x) }
-  method ASSIGN-POS(Math::Libgsl::Vector::Char:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_char_set(self.vector, $index, $x) }
+  method ASSIGN-POS(Math::Libgsl::Vector::Int8:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_char_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_char_set_all($!vector, $x) }
   method zero() { gsl_vector_char_set_zero($!vector) }
   method basis(Int:D $index! --> Int) { gsl_vector_char_set_basis($!vector, $index) }
@@ -777,34 +777,34 @@ class Char {
   method scanf(Str $filename! --> Int) { mgsl_vector_char_fscanf($filename, $!vector) }
   # View
   method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::Char::View $vv .= new;
-    Math::Libgsl::Vector::Char.new: vector => mgsl_vector_char_subvector($vv.view, $!vector, $offset, $n);
+    my Math::Libgsl::Vector::Int8::View $vv .= new;
+    Math::Libgsl::Vector::Int8.new: vector => mgsl_vector_char_subvector($vv.view, $!vector, $offset, $n);
   }
   method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::Char::View $vv .= new;
-    Math::Libgsl::Vector::Char.new: vector => mgsl_vector_char_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
+    my Math::Libgsl::Vector::Int8::View $vv .= new;
+    Math::Libgsl::Vector::Int8.new: vector => mgsl_vector_char_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-char-array(@array) is export {
-    my Math::Libgsl::Vector::Char::View $vv .= new;
+    my Math::Libgsl::Vector::Int8::View $vv .= new;
     my CArray[int8] $a .= new: @array».Num;
-    Math::Libgsl::Vector::Char.new: vector => mgsl_vector_char_view_array($vv.view, $a, @array.elems);
+    Math::Libgsl::Vector::Int8.new: vector => mgsl_vector_char_view_array($vv.view, $a, @array.elems);
   }
   sub view-char-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::Char::View $vv .= new;
+    my Math::Libgsl::Vector::Int8::View $vv .= new;
     my CArray[int8] $a .= new: @array».Num;
-    Math::Libgsl::Vector::Char.new: vector => mgsl_vector_char_view_array_with_stride($vv.view, $a, $stride, @array.elems);
+    Math::Libgsl::Vector::Int8.new: vector => mgsl_vector_char_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Char $src --> Int) { gsl_vector_char_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::Char $w --> Int) { gsl_vector_char_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::Int8 $src --> Int) { gsl_vector_char_memcpy($!vector, $src.vector) }
+  method swap(Math::Libgsl::Vector::Int8 $w --> Int) { gsl_vector_char_swap($!vector, $w.vector) }
   # Exchanging elements
   method swap-elems(Int $i, Int $j --> Int) { gsl_vector_char_swap_elements($!vector, $i, $j) }
   method reverse(--> Int) { gsl_vector_char_reverse($!vector) }
   # Vector operations
-  method add(Math::Libgsl::Vector::Char $b --> Int) { gsl_vector_char_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::Char $b --> Int) { gsl_vector_char_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::Char $b --> Int) { gsl_vector_char_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::Char $b --> Int) { gsl_vector_char_div($!vector, $b.vector) }
+  method add(Math::Libgsl::Vector::Int8 $b --> Int) { gsl_vector_char_add($!vector, $b.vector) }
+  method sub(Math::Libgsl::Vector::Int8 $b --> Int) { gsl_vector_char_sub($!vector, $b.vector) }
+  method mul(Math::Libgsl::Vector::Int8 $b --> Int) { gsl_vector_char_mul($!vector, $b.vector) }
+  method div(Math::Libgsl::Vector::Int8 $b --> Int) { gsl_vector_char_div($!vector, $b.vector) }
   method scale(Num(Cool) $x --> Int) { gsl_vector_char_scale($!vector, $x) }
   method add-constant(Num(Cool) $x --> Int) { gsl_vector_char_add_constant($!vector, $x) }
   # Finding maximum and minimum elements of vectors
@@ -829,10 +829,10 @@ class Char {
   method is-pos(--> Bool)    { gsl_vector_char_ispos($!vector)    ?? True !! False }
   method is-neg(--> Bool)    { gsl_vector_char_isneg($!vector)    ?? True !! False }
   method is-nonneg(--> Bool) { gsl_vector_char_isnonneg($!vector) ?? True !! False }
-  method is-equal(Math::Libgsl::Vector::Char $b --> Bool) { gsl_vector_char_equal($!vector, $b.vector) ?? True !! False }
+  method is-equal(Math::Libgsl::Vector::Int8 $b --> Bool) { gsl_vector_char_equal($!vector, $b.vector) ?? True !! False }
 }
 
-class UChar {
+class UInt8 {
   class View {
     has gsl_vector_uchar_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_uchar_view }
@@ -855,10 +855,10 @@ class UChar {
   }
   # Accessors
   method get(Int:D $index! --> Num) { gsl_vector_uchar_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::UChar:D: Int:D $index! --> Num) { gsl_vector_uchar_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::UChar:D: Range:D $range! --> List) { gsl_vector_uchar_get(self.vector, $_) for $range }
+  multi method AT-POS(Math::Libgsl::Vector::UInt8:D: Int:D $index! --> Num) { gsl_vector_uchar_get(self.vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::UInt8:D: Range:D $range! --> List) { gsl_vector_uchar_get(self.vector, $_) for $range }
   method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_uchar_set($!vector, $index, $x) }
-  method ASSIGN-POS(Math::Libgsl::Vector::UChar:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_uchar_set(self.vector, $index, $x) }
+  method ASSIGN-POS(Math::Libgsl::Vector::UInt8:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_uchar_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_uchar_set_all($!vector, $x) }
   method zero() { gsl_vector_uchar_set_zero($!vector) }
   method basis(Int:D $index! --> Int) { gsl_vector_uchar_set_basis($!vector, $index) }
@@ -869,34 +869,34 @@ class UChar {
   method scanf(Str $filename! --> Int) { mgsl_vector_uchar_fscanf($filename, $!vector) }
   # View
   method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::UChar::View $vv .= new;
-    Math::Libgsl::Vector::UChar.new: vector => mgsl_vector_uchar_subvector($vv.view, $!vector, $offset, $n);
+    my Math::Libgsl::Vector::UInt8::View $vv .= new;
+    Math::Libgsl::Vector::UInt8.new: vector => mgsl_vector_uchar_subvector($vv.view, $!vector, $offset, $n);
   }
   method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::UChar::View $vv .= new;
-    Math::Libgsl::Vector::UChar.new: vector => mgsl_vector_uchar_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
+    my Math::Libgsl::Vector::UInt8::View $vv .= new;
+    Math::Libgsl::Vector::UInt8.new: vector => mgsl_vector_uchar_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-uchar-array(@array) is export {
-    my Math::Libgsl::Vector::UChar::View $vv .= new;
+    my Math::Libgsl::Vector::UInt8::View $vv .= new;
     my CArray[uint8] $a .= new: @array».Num;
-    Math::Libgsl::Vector::UChar.new: vector => mgsl_vector_uchar_view_array($vv.view, $a, @array.elems);
+    Math::Libgsl::Vector::UInt8.new: vector => mgsl_vector_uchar_view_array($vv.view, $a, @array.elems);
   }
   sub view-uchar-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::UChar::View $vv .= new;
+    my Math::Libgsl::Vector::UInt8::View $vv .= new;
     my CArray[uint8] $a .= new: @array».Num;
-    Math::Libgsl::Vector::UChar.new: vector => mgsl_vector_uchar_view_array_with_stride($vv.view, $a, $stride, @array.elems);
+    Math::Libgsl::Vector::UInt8.new: vector => mgsl_vector_uchar_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::UChar $src --> Int) { gsl_vector_uchar_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::UChar $w --> Int) { gsl_vector_uchar_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::UInt8 $src --> Int) { gsl_vector_uchar_memcpy($!vector, $src.vector) }
+  method swap(Math::Libgsl::Vector::UInt8 $w --> Int) { gsl_vector_uchar_swap($!vector, $w.vector) }
   # Exchanging elements
   method swap-elems(Int $i, Int $j --> Int) { gsl_vector_uchar_swap_elements($!vector, $i, $j) }
   method reverse(--> Int) { gsl_vector_uchar_reverse($!vector) }
   # Vector operations
-  method add(Math::Libgsl::Vector::UChar $b --> Int) { gsl_vector_uchar_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::UChar $b --> Int) { gsl_vector_uchar_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::UChar $b --> Int) { gsl_vector_uchar_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::UChar $b --> Int) { gsl_vector_uchar_div($!vector, $b.vector) }
+  method add(Math::Libgsl::Vector::UInt8 $b --> Int) { gsl_vector_uchar_add($!vector, $b.vector) }
+  method sub(Math::Libgsl::Vector::UInt8 $b --> Int) { gsl_vector_uchar_sub($!vector, $b.vector) }
+  method mul(Math::Libgsl::Vector::UInt8 $b --> Int) { gsl_vector_uchar_mul($!vector, $b.vector) }
+  method div(Math::Libgsl::Vector::UInt8 $b --> Int) { gsl_vector_uchar_div($!vector, $b.vector) }
   method scale(Num(Cool) $x --> Int) { gsl_vector_uchar_scale($!vector, $x) }
   method add-constant(Num(Cool) $x --> Int) { gsl_vector_uchar_add_constant($!vector, $x) }
   # Finding maximum and minimum elements of vectors
@@ -921,7 +921,7 @@ class UChar {
   method is-pos(--> Bool)    { gsl_vector_uchar_ispos($!vector)    ?? True !! False }
   method is-neg(--> Bool)    { gsl_vector_uchar_isneg($!vector)    ?? True !! False }
   method is-nonneg(--> Bool) { gsl_vector_uchar_isnonneg($!vector) ?? True !! False }
-  method is-equal(Math::Libgsl::Vector::UChar $b --> Bool) { gsl_vector_uchar_equal($!vector, $b.vector) ?? True !! False }
+  method is-equal(Math::Libgsl::Vector::UInt8 $b --> Bool) { gsl_vector_uchar_equal($!vector, $b.vector) ?? True !! False }
 }
 
 class Complex64 {

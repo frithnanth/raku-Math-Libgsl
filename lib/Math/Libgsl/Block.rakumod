@@ -19,7 +19,7 @@ method read(Str $filename! --> Int) { mgsl_block_fread($filename, $!block) }
 method printf(Str $filename!, Str $format! --> Int) { mgsl_block_fprintf($filename, $!block, $format) }
 method scanf(Str $filename! --> Int) { mgsl_block_fscanf($filename, $!block) }
 
-class Float {
+class Num32 {
   has gsl_block_float $.block;
 
   multi method new(Int $size!) { self.bless(:$size) }
@@ -64,7 +64,7 @@ class UInt32 {
   method scanf(Str $filename! --> Int) { mgsl_block_uint_fscanf($filename, $!block) }
 }
 
-class Long {
+class Int64 {
   has gsl_block_long $.block;
 
   multi method new(Int $size!) { self.bless(:$size) }
@@ -79,7 +79,7 @@ class Long {
   method scanf(Str $filename! --> Int) { mgsl_block_long_fscanf($filename, $!block) }
 }
 
-class ULong {
+class UInt64 {
   has gsl_block_ulong $.block;
 
   multi method new(Int $size!) { self.bless(:$size) }
@@ -94,7 +94,7 @@ class ULong {
   method scanf(Str $filename! --> Int) { mgsl_block_ulong_fscanf($filename, $!block) }
 }
 
-class Short {
+class Int16 {
   has gsl_block_short $.block;
 
   multi method new(Int $size!) { self.bless(:$size) }
@@ -109,7 +109,7 @@ class Short {
   method scanf(Str $filename! --> Int) { mgsl_block_short_fscanf($filename, $!block) }
 }
 
-class UShort {
+class UInt16 {
   has gsl_block_ushort $.block;
 
   multi method new(Int $size!) { self.bless(:$size) }
@@ -124,7 +124,7 @@ class UShort {
   method scanf(Str $filename! --> Int) { mgsl_block_ushort_fscanf($filename, $!block) }
 }
 
-class Char {
+class Int8 {
   has gsl_block_char $.block;
 
   multi method new(Int $size!) { self.bless(:$size) }
@@ -139,7 +139,7 @@ class Char {
   method scanf(Str $filename! --> Int) { mgsl_block_char_fscanf($filename, $!block) }
 }
 
-class UChar {
+class UInt8 {
   has gsl_block_uchar $.block;
 
   multi method new(Int $size!) { self.bless(:$size) }

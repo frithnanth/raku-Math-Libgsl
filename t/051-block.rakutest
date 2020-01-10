@@ -20,11 +20,11 @@ subtest {
 }, 'block';
 
 subtest {
-  my Math::Libgsl::Block::Float $b1 .= new(:size(10));
-  isa-ok $b1, Math::Libgsl::Block::Float, 'new using pair';
+  my Math::Libgsl::Block::Num32 $b1 .= new(:size(10));
+  isa-ok $b1, Math::Libgsl::Block::Num32, 'new using pair';
   ok $b1.block.size == 10, 'attributes ok';
-  my Math::Libgsl::Block::Float $b2 .= new(10);
-  isa-ok $b2, Math::Libgsl::Block::Float, 'new using single value';
+  my Math::Libgsl::Block::Num32 $b2 .= new(10);
+  isa-ok $b2, Math::Libgsl::Block::Num32, 'new using single value';
   my $filename = 't/block.dat';
   LEAVE { with $filename.IO { .unlink if .e } }
   ok $b1.write($filename) == GSL_SUCCESS, 'can write a block to file';
