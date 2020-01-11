@@ -4,6 +4,8 @@ unit class Math::Libgsl::Vector:ver<0.0.3>:auth<cpan:FRITH>;
 
 use Math::Libgsl::Raw::Complex :ALL;
 use Math::Libgsl::Raw::Matrix :ALL;
+use Math::Libgsl::Exception;
+use Math::Libgsl::Constants;
 use NativeCall;
 
 class View {
@@ -32,9 +34,13 @@ multi method AT-POS(Math::Libgsl::Vector:D: Int:D $index! --> Num) { gsl_vector_
 multi method AT-POS(Math::Libgsl::Vector:D: Range:D $range! --> List) { gsl_vector_get(self.vector, $_) for $range }
 method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_set($!vector, $index, $x) }
 method ASSIGN-POS(Math::Libgsl::Vector:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_set(self.vector, $index, $x) }
-method setall(Num(Cool) $x!) { gsl_vector_set_all($!vector, $x) }
-method zero() { gsl_vector_set_zero($!vector) }
-method basis(Int:D $index! --> Int) { gsl_vector_set_basis($!vector, $index) }
+method setall(Num(Cool) $x!) { gsl_vector_set_all($!vector, $x); self }
+method zero() { gsl_vector_set_zero($!vector); self }
+method basis(Int:D $index!) {
+  my $ret = gsl_vector_set_basis($!vector, $index);
+  fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
+  self
+}
 # IO
 method write(Str $filename! --> Int) { mgsl_vector_fwrite($filename, $!vector) }
 method read(Str $filename! --> Int) { mgsl_vector_fread($filename, $!vector) }
@@ -60,18 +66,58 @@ sub view-array-stride(@array, size_t $stride) is export {
   Math::Libgsl::Vector.new: vector => mgsl_vector_view_array_with_stride($vv.view, $a, $stride, @array.elems);
 }
 # Copy
-method copy(Math::Libgsl::Vector $src --> Int) { gsl_vector_memcpy($!vector, $src.vector) }
-method swap(Math::Libgsl::Vector $w --> Int) { gsl_vector_swap($!vector, $w.vector) }
+method copy(Math::Libgsl::Vector $src) {
+  my $ret = gsl_vector_memcpy($!vector, $src.vector);
+  fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
+  self
+}
+method swap(Math::Libgsl::Vector $w) {
+  my $ret = gsl_vector_swap($!vector, $w.vector);
+  fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
+  self
+}
 # Exchanging elements
-method swap-elems(Int $i, Int $j --> Int) { gsl_vector_swap_elements($!vector, $i, $j) }
-method reverse(--> Int) { gsl_vector_reverse($!vector) }
+method swap-elems(Int $i, Int $j) {
+  my $ret = gsl_vector_swap_elements($!vector, $i, $j);
+  fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
+  self
+}
+method reverse() {
+  my $ret = gsl_vector_reverse($!vector);
+  fail X::Libgsl.new: errno => $ret, error => "Can't reverse the vector" if $ret ≠ GSL_SUCCESS;
+  self
+}
 # Vector operations
-method add(Math::Libgsl::Vector $b --> Int) { gsl_vector_add($!vector, $b.vector) }
-method sub(Math::Libgsl::Vector $b --> Int) { gsl_vector_sub($!vector, $b.vector) }
-method mul(Math::Libgsl::Vector $b --> Int) { gsl_vector_mul($!vector, $b.vector) }
-method div(Math::Libgsl::Vector $b --> Int) { gsl_vector_div($!vector, $b.vector) }
-method scale(Num(Cool) $x --> Int) { gsl_vector_scale($!vector, $x) }
-method add-constant(Num(Cool) $x --> Int) { gsl_vector_add_constant($!vector, $x) }
+method add(Math::Libgsl::Vector $b) {
+  my $ret = gsl_vector_add($!vector, $b.vector);
+  fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
+  self
+}
+method sub(Math::Libgsl::Vector $b) {
+  my $ret = gsl_vector_sub($!vector, $b.vector);
+  fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
+  self
+}
+method mul(Math::Libgsl::Vector $b) {
+  my $ret = gsl_vector_mul($!vector, $b.vector);
+  fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
+  self
+}
+method div(Math::Libgsl::Vector $b) {
+  my $ret = gsl_vector_div($!vector, $b.vector);
+  fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
+  self
+}
+method scale(Num(Cool) $x) {
+  my $ret = gsl_vector_scale($!vector, $x);
+  fail X::Libgsl.new: errno => $ret, error => "Can't scale the vector" if $ret ≠ GSL_SUCCESS;
+  self
+}
+method add-constant(Num(Cool) $x) {
+  my $ret = gsl_vector_add_constant($!vector, $x);
+  fail X::Libgsl.new: errno => $ret, error => "Can't add a constant to the elements" if $ret ≠ GSL_SUCCESS;
+  self
+}
 # Finding maximum and minimum elements of vectors
 method max(--> Num) { gsl_vector_max($!vector) }
 method min(--> Num) { gsl_vector_min($!vector) }
@@ -125,7 +171,11 @@ class Num32 {
   method ASSIGN-POS(Math::Libgsl::Vector::Num32:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_float_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_float_set_all($!vector, $x) }
   method zero() { gsl_vector_float_set_zero($!vector) }
-  method basis(Int:D $index! --> Int) { gsl_vector_float_set_basis($!vector, $index) }
+  method basis(Int:D $index!) {
+    my $ret = gsl_vector_float_set_basis($!vector, $index);
+    fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # IO
   method write(Str $filename! --> Int) { mgsl_vector_float_fwrite($filename, $!vector) }
   method read(Str $filename! --> Int) { mgsl_vector_float_fread($filename, $!vector) }
@@ -151,18 +201,58 @@ class Num32 {
     Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_float_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Num32 $src --> Int) { gsl_vector_float_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::Num32 $w --> Int) { gsl_vector_float_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::Num32 $src) {
+    my $ret = gsl_vector_float_memcpy($!vector, $src.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method swap(Math::Libgsl::Vector::Num32 $w) {
+    my $ret = gsl_vector_float_swap($!vector, $w.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j --> Int) { gsl_vector_float_swap_elements($!vector, $i, $j) }
-  method reverse(--> Int) { gsl_vector_float_reverse($!vector) }
+  method swap-elems(Int $i, Int $j) {
+    my $ret = gsl_vector_float_swap_elements($!vector, $i, $j);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method reverse() {
+    my $ret = gsl_vector_float_reverse($!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't reverse the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Vector operations
-  method add(Math::Libgsl::Vector::Num32 $b --> Int) { gsl_vector_float_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::Num32 $b --> Int) { gsl_vector_float_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::Num32 $b --> Int) { gsl_vector_float_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::Num32 $b --> Int) { gsl_vector_float_div($!vector, $b.vector) }
-  method scale(Num(Cool) $x --> Int) { gsl_vector_float_scale($!vector, $x) }
-  method add-constant(Num(Cool) $x --> Int) { gsl_vector_float_add_constant($!vector, $x) }
+  method add(Math::Libgsl::Vector::Num32 $b) {
+    my $ret = gsl_vector_float_add($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method sub(Math::Libgsl::Vector::Num32 $b) {
+    my $ret = gsl_vector_float_sub($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method mul(Math::Libgsl::Vector::Num32 $b) {
+    my $ret = gsl_vector_float_mul($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method div(Math::Libgsl::Vector::Num32 $b) {
+    my $ret = gsl_vector_float_div($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scale(Num(Cool) $x) {
+    my $ret = gsl_vector_float_scale($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scale the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method add-constant(Num(Cool) $x) {
+    my $ret = gsl_vector_float_add_constant($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add a constant to the elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Finding maximum and minimum elements of vectors
   method max(--> Num) { gsl_vector_float_max($!vector) }
   method min(--> Num) { gsl_vector_float_min($!vector) }
@@ -217,7 +307,11 @@ class Int32 {
   method ASSIGN-POS(Math::Libgsl::Vector::Int32:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_int_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_int_set_all($!vector, $x) }
   method zero() { gsl_vector_int_set_zero($!vector) }
-  method basis(Int:D $index! --> Int) { gsl_vector_int_set_basis($!vector, $index) }
+  method basis(Int:D $index!) {
+    my $ret = gsl_vector_int_set_basis($!vector, $index);
+    fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # IO
   method write(Str $filename! --> Int) { mgsl_vector_int_fwrite($filename, $!vector) }
   method read(Str $filename! --> Int) { mgsl_vector_int_fread($filename, $!vector) }
@@ -243,18 +337,58 @@ class Int32 {
     Math::Libgsl::Vector::Int32.new: vector => mgsl_vector_int_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Int32 $src --> Int) { gsl_vector_int_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::Int32 $w --> Int) { gsl_vector_int_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::Int32 $src) {
+    my $ret = gsl_vector_int_memcpy($!vector, $src.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method swap(Math::Libgsl::Vector::Int32 $w) {
+    my $ret = gsl_vector_int_swap($!vector, $w.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j --> Int) { gsl_vector_int_swap_elements($!vector, $i, $j) }
-  method reverse(--> Int) { gsl_vector_int_reverse($!vector) }
+  method swap-elems(Int $i, Int $j) {
+    my $ret = gsl_vector_int_swap_elements($!vector, $i, $j);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method reverse() {
+    my $ret = gsl_vector_int_reverse($!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't reverse the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Vector operations
-  method add(Math::Libgsl::Vector::Int32 $b --> Int) { gsl_vector_int_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::Int32 $b --> Int) { gsl_vector_int_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::Int32 $b --> Int) { gsl_vector_int_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::Int32 $b --> Int) { gsl_vector_int_div($!vector, $b.vector) }
-  method scale(Num(Cool) $x --> Int) { gsl_vector_int_scale($!vector, $x) }
-  method add-constant(Num(Cool) $x --> Int) { gsl_vector_int_add_constant($!vector, $x) }
+  method add(Math::Libgsl::Vector::Int32 $b) {
+    my $ret = gsl_vector_int_add($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method sub(Math::Libgsl::Vector::Int32 $b) {
+    my $ret = gsl_vector_int_sub($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method mul(Math::Libgsl::Vector::Int32 $b) {
+    my $ret = gsl_vector_int_mul($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method div(Math::Libgsl::Vector::Int32 $b) {
+    my $ret = gsl_vector_int_div($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scale(Num(Cool) $x) {
+    my $ret = gsl_vector_int_scale($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scale the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method add-constant(Num(Cool) $x) {
+    my $ret = gsl_vector_int_add_constant($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add a constant to the elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Finding maximum and minimum elements of vectors
   method max(--> Int) { gsl_vector_int_max($!vector) }
   method min(--> Int) { gsl_vector_int_min($!vector) }
@@ -309,7 +443,11 @@ class UInt32 {
   method ASSIGN-POS(Math::Libgsl::Vector::UInt32:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_uint_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_uint_set_all($!vector, $x) }
   method zero() { gsl_vector_uint_set_zero($!vector) }
-  method basis(Int:D $index! --> Int) { gsl_vector_uint_set_basis($!vector, $index) }
+  method basis(Int:D $index!) {
+    my $ret = gsl_vector_uint_set_basis($!vector, $index);
+    fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # IO
   method write(Str $filename! --> Int) { mgsl_vector_uint_fwrite($filename, $!vector) }
   method read(Str $filename! --> Int) { mgsl_vector_uint_fread($filename, $!vector) }
@@ -335,18 +473,58 @@ class UInt32 {
     Math::Libgsl::Vector::UInt32.new: vector => mgsl_vector_uint_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::UInt32 $src --> Int) { gsl_vector_uint_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::UInt32 $w --> Int) { gsl_vector_uint_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::UInt32 $src) {
+    my $ret = gsl_vector_uint_memcpy($!vector, $src.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method swap(Math::Libgsl::Vector::UInt32 $w) {
+    my $ret = gsl_vector_uint_swap($!vector, $w.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j --> Int) { gsl_vector_uint_swap_elements($!vector, $i, $j) }
-  method reverse(--> Int) { gsl_vector_uint_reverse($!vector) }
+  method swap-elems(Int $i, Int $j) {
+    my $ret = gsl_vector_uint_swap_elements($!vector, $i, $j);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method reverse() {
+    my $ret = gsl_vector_uint_reverse($!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't reverse the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Vector operations
-  method add(Math::Libgsl::Vector::UInt32 $b --> Int) { gsl_vector_uint_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::UInt32 $b --> Int) { gsl_vector_uint_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::UInt32 $b --> Int) { gsl_vector_uint_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::UInt32 $b --> Int) { gsl_vector_uint_div($!vector, $b.vector) }
-  method scale(Num(Cool) $x --> Int) { gsl_vector_uint_scale($!vector, $x) }
-  method add-constant(Num(Cool) $x --> Int) { gsl_vector_uint_add_constant($!vector, $x) }
+  method add(Math::Libgsl::Vector::UInt32 $b) {
+    my $ret = gsl_vector_uint_add($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method sub(Math::Libgsl::Vector::UInt32 $b) {
+    my $ret = gsl_vector_uint_sub($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method mul(Math::Libgsl::Vector::UInt32 $b) {
+    my $ret = gsl_vector_uint_mul($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method div(Math::Libgsl::Vector::UInt32 $b) {
+    my $ret = gsl_vector_uint_div($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scale(Num(Cool) $x) {
+    my $ret = gsl_vector_uint_scale($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scale the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method add-constant(Num(Cool) $x) {
+    my $ret = gsl_vector_uint_add_constant($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add a constant to the elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Finding maximum and minimum elements of vectors
   method max(--> UInt) { gsl_vector_uint_max($!vector) }
   method min(--> UInt) { gsl_vector_uint_min($!vector) }
@@ -401,7 +579,11 @@ class Int64 {
   method ASSIGN-POS(Math::Libgsl::Vector::Int64:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_long_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_long_set_all($!vector, $x) }
   method zero() { gsl_vector_long_set_zero($!vector) }
-  method basis(Int:D $index! --> Int) { gsl_vector_long_set_basis($!vector, $index) }
+  method basis(Int:D $index!) {
+    my $ret = gsl_vector_long_set_basis($!vector, $index);
+    fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # IO
   method write(Str $filename! --> Int) { mgsl_vector_long_fwrite($filename, $!vector) }
   method read(Str $filename! --> Int) { mgsl_vector_long_fread($filename, $!vector) }
@@ -427,18 +609,58 @@ class Int64 {
     Math::Libgsl::Vector::Int64.new: vector => mgsl_vector_long_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Int64 $src --> Int) { gsl_vector_long_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::Int64 $w --> Int) { gsl_vector_long_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::Int64 $src) {
+    my $ret = gsl_vector_long_memcpy($!vector, $src.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method swap(Math::Libgsl::Vector::Int64 $w) {
+    my $ret = gsl_vector_long_swap($!vector, $w.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j --> Int) { gsl_vector_long_swap_elements($!vector, $i, $j) }
-  method reverse(--> Int) { gsl_vector_long_reverse($!vector) }
+  method swap-elems(Int $i, Int $j) {
+    my $ret = gsl_vector_long_swap_elements($!vector, $i, $j);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method reverse() {
+    my $ret = gsl_vector_long_reverse($!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't reverse the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Vector operations
-  method add(Math::Libgsl::Vector::Int64 $b --> Int) { gsl_vector_long_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::Int64 $b --> Int) { gsl_vector_long_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::Int64 $b --> Int) { gsl_vector_long_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::Int64 $b --> Int) { gsl_vector_long_div($!vector, $b.vector) }
-  method scale(Num(Cool) $x --> Int) { gsl_vector_long_scale($!vector, $x) }
-  method add-constant(Num(Cool) $x --> Int) { gsl_vector_long_add_constant($!vector, $x) }
+  method add(Math::Libgsl::Vector::Int64 $b) {
+    my $ret = gsl_vector_long_add($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method sub(Math::Libgsl::Vector::Int64 $b) {
+    my $ret = gsl_vector_long_sub($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method mul(Math::Libgsl::Vector::Int64 $b) {
+    my $ret = gsl_vector_long_mul($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method div(Math::Libgsl::Vector::Int64 $b) {
+    my $ret = gsl_vector_long_div($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scale(Num(Cool) $x) {
+    my $ret = gsl_vector_long_scale($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scale the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method add-constant(Num(Cool) $x) {
+    my $ret = gsl_vector_long_add_constant($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add a constant to the elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Finding maximum and minimum elements of vectors
   method max(--> Int) { gsl_vector_long_max($!vector) }
   method min(--> Int) { gsl_vector_long_min($!vector) }
@@ -493,7 +715,11 @@ class UInt64 {
   method ASSIGN-POS(Math::Libgsl::Vector::UInt64:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_ulong_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_ulong_set_all($!vector, $x) }
   method zero() { gsl_vector_ulong_set_zero($!vector) }
-  method basis(Int:D $index! --> Int) { gsl_vector_ulong_set_basis($!vector, $index) }
+  method basis(Int:D $index!) {
+    my $ret = gsl_vector_ulong_set_basis($!vector, $index);
+    fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # IO
   method write(Str $filename! --> Int) { mgsl_vector_ulong_fwrite($filename, $!vector) }
   method read(Str $filename! --> Int) { mgsl_vector_ulong_fread($filename, $!vector) }
@@ -519,18 +745,58 @@ class UInt64 {
     Math::Libgsl::Vector::UInt64.new: vector => mgsl_vector_ulong_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::UInt64 $src --> Int) { gsl_vector_ulong_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::UInt64 $w --> Int) { gsl_vector_ulong_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::UInt64 $src) {
+    my $ret = gsl_vector_ulong_memcpy($!vector, $src.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method swap(Math::Libgsl::Vector::UInt64 $w) {
+    my $ret = gsl_vector_ulong_swap($!vector, $w.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j --> Int) { gsl_vector_ulong_swap_elements($!vector, $i, $j) }
-  method reverse(--> Int) { gsl_vector_ulong_reverse($!vector) }
+  method swap-elems(Int $i, Int $j) {
+    my $ret = gsl_vector_ulong_swap_elements($!vector, $i, $j);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method reverse() {
+    my $ret = gsl_vector_ulong_reverse($!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't reverse the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Vector operations
-  method add(Math::Libgsl::Vector::UInt64 $b --> Int) { gsl_vector_ulong_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::UInt64 $b --> Int) { gsl_vector_ulong_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::UInt64 $b --> Int) { gsl_vector_ulong_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::UInt64 $b --> Int) { gsl_vector_ulong_div($!vector, $b.vector) }
-  method scale(Num(Cool) $x --> Int) { gsl_vector_ulong_scale($!vector, $x) }
-  method add-constant(Num(Cool) $x --> Int) { gsl_vector_ulong_add_constant($!vector, $x) }
+  method add(Math::Libgsl::Vector::UInt64 $b) {
+    my $ret = gsl_vector_ulong_add($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method sub(Math::Libgsl::Vector::UInt64 $b) {
+    my $ret = gsl_vector_ulong_sub($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method mul(Math::Libgsl::Vector::UInt64 $b) {
+    my $ret = gsl_vector_ulong_mul($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method div(Math::Libgsl::Vector::UInt64 $b) {
+    my $ret = gsl_vector_ulong_div($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scale(Num(Cool) $x) {
+    my $ret = gsl_vector_ulong_scale($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scale the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method add-constant(Num(Cool) $x) {
+    my $ret = gsl_vector_ulong_add_constant($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add a constant to the elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Finding maximum and minimum elements of vectors
   method max(--> UInt) { gsl_vector_ulong_max($!vector) }
   method min(--> UInt) { gsl_vector_ulong_min($!vector) }
@@ -585,7 +851,11 @@ class Int16 {
   method ASSIGN-POS(Math::Libgsl::Vector::Int16:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_short_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_short_set_all($!vector, $x) }
   method zero() { gsl_vector_short_set_zero($!vector) }
-  method basis(Int:D $index! --> Int) { gsl_vector_short_set_basis($!vector, $index) }
+  method basis(Int:D $index!) {
+    my $ret = gsl_vector_short_set_basis($!vector, $index);
+    fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # IO
   method write(Str $filename! --> Int) { mgsl_vector_short_fwrite($filename, $!vector) }
   method read(Str $filename! --> Int) { mgsl_vector_short_fread($filename, $!vector) }
@@ -611,18 +881,58 @@ class Int16 {
     Math::Libgsl::Vector::Int16.new: vector => mgsl_vector_short_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Int16 $src --> Int) { gsl_vector_short_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::Int16 $w --> Int) { gsl_vector_short_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::Int16 $src) {
+    my $ret = gsl_vector_short_memcpy($!vector, $src.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method swap(Math::Libgsl::Vector::Int16 $w) {
+    my $ret = gsl_vector_short_swap($!vector, $w.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j --> Int) { gsl_vector_short_swap_elements($!vector, $i, $j) }
-  method reverse(--> Int) { gsl_vector_short_reverse($!vector) }
+  method swap-elems(Int $i, Int $j) {
+    my $ret = gsl_vector_short_swap_elements($!vector, $i, $j);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method reverse() {
+    my $ret = gsl_vector_short_reverse($!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't reverse the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Vector operations
-  method add(Math::Libgsl::Vector::Int16 $b --> Int) { gsl_vector_short_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::Int16 $b --> Int) { gsl_vector_short_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::Int16 $b --> Int) { gsl_vector_short_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::Int16 $b --> Int) { gsl_vector_short_div($!vector, $b.vector) }
-  method scale(Num(Cool) $x --> Int) { gsl_vector_short_scale($!vector, $x) }
-  method add-constant(Num(Cool) $x --> Int) { gsl_vector_short_add_constant($!vector, $x) }
+  method add(Math::Libgsl::Vector::Int16 $b) {
+    my $ret = gsl_vector_short_add($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method sub(Math::Libgsl::Vector::Int16 $b) {
+    my $ret = gsl_vector_short_sub($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method mul(Math::Libgsl::Vector::Int16 $b) {
+    my $ret = gsl_vector_short_mul($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method div(Math::Libgsl::Vector::Int16 $b) {
+    my $ret = gsl_vector_short_div($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scale(Num(Cool) $x) {
+    my $ret = gsl_vector_short_scale($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scale the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method add-constant(Num(Cool) $x) {
+    my $ret = gsl_vector_short_add_constant($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add a constant to the elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Finding maximum and minimum elements of vectors
   method max(--> Int) { gsl_vector_short_max($!vector) }
   method min(--> Int) { gsl_vector_short_min($!vector) }
@@ -677,7 +987,11 @@ class UInt16 {
   method ASSIGN-POS(Math::Libgsl::Vector::UInt16:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_ushort_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_ushort_set_all($!vector, $x) }
   method zero() { gsl_vector_ushort_set_zero($!vector) }
-  method basis(Int:D $index! --> Int) { gsl_vector_ushort_set_basis($!vector, $index) }
+  method basis(Int:D $index!) {
+    my $ret = gsl_vector_ushort_set_basis($!vector, $index);
+    fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # IO
   method write(Str $filename! --> Int) { mgsl_vector_ushort_fwrite($filename, $!vector) }
   method read(Str $filename! --> Int) { mgsl_vector_ushort_fread($filename, $!vector) }
@@ -703,18 +1017,58 @@ class UInt16 {
     Math::Libgsl::Vector::UInt16.new: vector => mgsl_vector_ushort_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::UInt16 $src --> Int) { gsl_vector_ushort_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::UInt16 $w --> Int) { gsl_vector_ushort_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::UInt16 $src) {
+    my $ret = gsl_vector_ushort_memcpy($!vector, $src.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method swap(Math::Libgsl::Vector::UInt16 $w) {
+    my $ret = gsl_vector_ushort_swap($!vector, $w.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j --> Int) { gsl_vector_ushort_swap_elements($!vector, $i, $j) }
-  method reverse(--> Int) { gsl_vector_ushort_reverse($!vector) }
+  method swap-elems(Int $i, Int $j) {
+    my $ret = gsl_vector_ushort_swap_elements($!vector, $i, $j);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method reverse() {
+    my $ret = gsl_vector_ushort_reverse($!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't reverse the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Vector operations
-  method add(Math::Libgsl::Vector::UInt16 $b --> Int) { gsl_vector_ushort_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::UInt16 $b --> Int) { gsl_vector_ushort_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::UInt16 $b --> Int) { gsl_vector_ushort_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::UInt16 $b --> Int) { gsl_vector_ushort_div($!vector, $b.vector) }
-  method scale(Num(Cool) $x --> Int) { gsl_vector_ushort_scale($!vector, $x) }
-  method add-constant(Num(Cool) $x --> Int) { gsl_vector_ushort_add_constant($!vector, $x) }
+  method add(Math::Libgsl::Vector::UInt16 $b) {
+    my $ret = gsl_vector_ushort_add($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method sub(Math::Libgsl::Vector::UInt16 $b) {
+    my $ret = gsl_vector_ushort_sub($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method mul(Math::Libgsl::Vector::UInt16 $b) {
+    my $ret = gsl_vector_ushort_mul($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method div(Math::Libgsl::Vector::UInt16 $b) {
+    my $ret = gsl_vector_ushort_div($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scale(Num(Cool) $x) {
+    my $ret = gsl_vector_ushort_scale($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scale the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method add-constant(Num(Cool) $x) {
+    my $ret = gsl_vector_ushort_add_constant($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add a constant to the elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Finding maximum and minimum elements of vectors
   method max(--> UInt) { gsl_vector_ushort_max($!vector) }
   method min(--> UInt) { gsl_vector_ushort_min($!vector) }
@@ -769,7 +1123,11 @@ class Int8 {
   method ASSIGN-POS(Math::Libgsl::Vector::Int8:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_char_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_char_set_all($!vector, $x) }
   method zero() { gsl_vector_char_set_zero($!vector) }
-  method basis(Int:D $index! --> Int) { gsl_vector_char_set_basis($!vector, $index) }
+  method basis(Int:D $index!) {
+    my $ret = gsl_vector_char_set_basis($!vector, $index);
+    fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # IO
   method write(Str $filename! --> Int) { mgsl_vector_char_fwrite($filename, $!vector) }
   method read(Str $filename! --> Int) { mgsl_vector_char_fread($filename, $!vector) }
@@ -795,18 +1153,58 @@ class Int8 {
     Math::Libgsl::Vector::Int8.new: vector => mgsl_vector_char_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Int8 $src --> Int) { gsl_vector_char_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::Int8 $w --> Int) { gsl_vector_char_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::Int8 $src) {
+    my $ret = gsl_vector_char_memcpy($!vector, $src.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method swap(Math::Libgsl::Vector::Int8 $w) {
+    my $ret = gsl_vector_char_swap($!vector, $w.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j --> Int) { gsl_vector_char_swap_elements($!vector, $i, $j) }
-  method reverse(--> Int) { gsl_vector_char_reverse($!vector) }
+  method swap-elems(Int $i, Int $j) {
+    my $ret = gsl_vector_char_swap_elements($!vector, $i, $j);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method reverse() {
+    my $ret = gsl_vector_char_reverse($!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't reverse the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Vector operations
-  method add(Math::Libgsl::Vector::Int8 $b --> Int) { gsl_vector_char_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::Int8 $b --> Int) { gsl_vector_char_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::Int8 $b --> Int) { gsl_vector_char_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::Int8 $b --> Int) { gsl_vector_char_div($!vector, $b.vector) }
-  method scale(Num(Cool) $x --> Int) { gsl_vector_char_scale($!vector, $x) }
-  method add-constant(Num(Cool) $x --> Int) { gsl_vector_char_add_constant($!vector, $x) }
+  method add(Math::Libgsl::Vector::Int8 $b) {
+    my $ret = gsl_vector_char_add($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method sub(Math::Libgsl::Vector::Int8 $b) {
+    my $ret = gsl_vector_char_sub($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method mul(Math::Libgsl::Vector::Int8 $b) {
+    my $ret = gsl_vector_char_mul($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method div(Math::Libgsl::Vector::Int8 $b) {
+    my $ret = gsl_vector_char_div($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scale(Num(Cool) $x) {
+    my $ret = gsl_vector_char_scale($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scale the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method add-constant(Num(Cool) $x) {
+    my $ret = gsl_vector_char_add_constant($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add a constant to the elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Finding maximum and minimum elements of vectors
   method max(--> Int) { gsl_vector_char_max($!vector) }
   method min(--> Int) { gsl_vector_char_min($!vector) }
@@ -861,7 +1259,11 @@ class UInt8 {
   method ASSIGN-POS(Math::Libgsl::Vector::UInt8:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_uchar_set(self.vector, $index, $x) }
   method setall(Num(Cool) $x!) { gsl_vector_uchar_set_all($!vector, $x) }
   method zero() { gsl_vector_uchar_set_zero($!vector) }
-  method basis(Int:D $index! --> Int) { gsl_vector_uchar_set_basis($!vector, $index) }
+  method basis(Int:D $index!) {
+    my $ret = gsl_vector_uchar_set_basis($!vector, $index);
+    fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # IO
   method write(Str $filename! --> Int) { mgsl_vector_uchar_fwrite($filename, $!vector) }
   method read(Str $filename! --> Int) { mgsl_vector_uchar_fread($filename, $!vector) }
@@ -887,18 +1289,58 @@ class UInt8 {
     Math::Libgsl::Vector::UInt8.new: vector => mgsl_vector_uchar_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::UInt8 $src --> Int) { gsl_vector_uchar_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::UInt8 $w --> Int) { gsl_vector_uchar_swap($!vector, $w.vector) }
+  method copy(Math::Libgsl::Vector::UInt8 $src) {
+    my $ret = gsl_vector_uchar_memcpy($!vector, $src.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method swap(Math::Libgsl::Vector::UInt8 $w) {
+    my $ret = gsl_vector_uchar_swap($!vector, $w.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j --> Int) { gsl_vector_uchar_swap_elements($!vector, $i, $j) }
-  method reverse(--> Int) { gsl_vector_uchar_reverse($!vector) }
+  method swap-elems(Int $i, Int $j) {
+    my $ret = gsl_vector_uchar_swap_elements($!vector, $i, $j);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method reverse() {
+    my $ret = gsl_vector_uchar_reverse($!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't reverse the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Vector operations
-  method add(Math::Libgsl::Vector::UInt8 $b --> Int) { gsl_vector_uchar_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::UInt8 $b --> Int) { gsl_vector_uchar_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::UInt8 $b --> Int) { gsl_vector_uchar_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::UInt8 $b --> Int) { gsl_vector_uchar_div($!vector, $b.vector) }
-  method scale(Num(Cool) $x --> Int) { gsl_vector_uchar_scale($!vector, $x) }
-  method add-constant(Num(Cool) $x --> Int) { gsl_vector_uchar_add_constant($!vector, $x) }
+  method add(Math::Libgsl::Vector::UInt8 $b) {
+    my $ret = gsl_vector_uchar_add($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method sub(Math::Libgsl::Vector::UInt8 $b) {
+    my $ret = gsl_vector_uchar_sub($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method mul(Math::Libgsl::Vector::UInt8 $b) {
+    my $ret = gsl_vector_uchar_mul($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method div(Math::Libgsl::Vector::UInt8 $b) {
+    my $ret = gsl_vector_uchar_div($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scale(Num(Cool) $x) {
+    my $ret = gsl_vector_uchar_scale($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scale the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method add-constant(Num(Cool) $x) {
+    my $ret = gsl_vector_uchar_add_constant($!vector, $x);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add a constant to the elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # Finding maximum and minimum elements of vectors
   method max(--> UInt) { gsl_vector_uchar_max($!vector) }
   method min(--> UInt) { gsl_vector_uchar_min($!vector) }
@@ -990,7 +1432,11 @@ class Complex64 {
     free_gsl_complex($c);
   }
   method zero() { gsl_vector_complex_set_zero($!vector) }
-  method basis(Int:D $index! --> Int) { gsl_vector_complex_set_basis($!vector, $index) }
+  method basis(Int:D $index!) {
+    my $ret = gsl_vector_complex_set_basis($!vector, $index);
+    fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # IO
   method write(Str $filename! --> Int) { mgsl_vector_complex_fwrite($filename, $!vector) }
   method read(Str $filename! --> Int) { mgsl_vector_complex_fread($filename, $!vector) }
@@ -1024,27 +1470,63 @@ class Complex64 {
     Math::Libgsl::Vector.new: vector => mgsl_vector_complex_imag($vv.view, $!vector);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Complex64 $src --> Int) { gsl_vector_complex_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::Complex64 $w --> Int) { gsl_vector_complex_swap($!vector, $w.vector) }
-  # Exchanging elements
-  method swap-elems(Int $i, Int $j --> Int) { gsl_vector_complex_swap_elements($!vector, $i, $j) }
-  method reverse(--> Int) { gsl_vector_complex_reverse($!vector) }
-  # Vector operations
-  method add(Math::Libgsl::Vector::Complex64 $b --> Int) { gsl_vector_complex_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::Complex64 $b --> Int) { gsl_vector_complex_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::Complex64 $b --> Int) { gsl_vector_complex_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::Complex64 $b --> Int) { gsl_vector_complex_div($!vector, $b.vector) }
-  method scale(Complex $x --> Int) {
-    my $c = alloc_gsl_complex;
-    mgsl_complex_rect($x.re, $x.im, $c);
-    mgsl_vector_complex_scale($!vector, $c);
-    free_gsl_complex($c);
+  method copy(Math::Libgsl::Vector::Complex64 $src) {
+    my $ret = gsl_vector_complex_memcpy($!vector, $src.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
+    self
   }
-  method add-constant(Complex $x --> Int) {
+  method swap(Math::Libgsl::Vector::Complex64 $w) {
+    my $ret = gsl_vector_complex_swap($!vector, $w.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  # Exchanging elements
+  method swap-elems(Int $i, Int $j) {
+    my $ret = gsl_vector_complex_swap_elements($!vector, $i, $j);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method reverse() {
+    my $ret = gsl_vector_complex_reverse($!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't reverse the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  # Vector operations
+  method add(Math::Libgsl::Vector::Complex64 $b) {
+    my $ret = gsl_vector_complex_add($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method sub(Math::Libgsl::Vector::Complex64 $b) {
+    my $ret = gsl_vector_complex_sub($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method mul(Math::Libgsl::Vector::Complex64 $b) {
+    my $ret = gsl_vector_complex_mul($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method div(Math::Libgsl::Vector::Complex64 $b) {
+    my $ret = gsl_vector_complex_div($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scale(Complex $x) {
     my $c = alloc_gsl_complex;
     mgsl_complex_rect($x.re, $x.im, $c);
-    mgsl_vector_complex_add_constant($!vector, $c);
+    my $ret = mgsl_vector_complex_scale($!vector, $c);
     free_gsl_complex($c);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scale the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method add-constant(Complex $x) {
+    my $c = alloc_gsl_complex;
+    mgsl_complex_rect($x.re, $x.im, $c);
+    my $ret = mgsl_vector_complex_add_constant($!vector, $c);
+    free_gsl_complex($c);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add a constant to all elements" if $ret ≠ GSL_SUCCESS;
+    self
   }
   # Vector properties
   method is-null(--> Bool)   { gsl_vector_complex_isnull($!vector)   ?? True !! False }
@@ -1122,7 +1604,11 @@ class Complex32 {
     free_gsl_complex_float($c);
   }
   method zero() { gsl_vector_complex_float_set_zero($!vector) }
-  method basis(Int:D $index! --> Int) { gsl_vector_complex_float_set_basis($!vector, $index) }
+  method basis(Int:D $index!) {
+    my $ret = gsl_vector_complex_float_set_basis($!vector, $index);
+    fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # IO
   method write(Str $filename! --> Int) { mgsl_vector_complex_float_fwrite($filename, $!vector) }
   method read(Str $filename! --> Int) { mgsl_vector_complex_float_fread($filename, $!vector) }
@@ -1156,31 +1642,67 @@ class Complex32 {
     Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_complex_float_imag($vv.view, $!vector);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Complex32 $src --> Int) { gsl_vector_complex_float_memcpy($!vector, $src.vector) }
-  method swap(Math::Libgsl::Vector::Complex32 $w --> Int) { gsl_vector_complex_float_swap($!vector, $w.vector) }
-  # Exchanging elements
-  method swap-elems(Int $i, Int $j --> Int) { gsl_vector_complex_float_swap_elements($!vector, $i, $j) }
-  method reverse(--> Int) { gsl_vector_complex_float_reverse($!vector) }
-  # Vector operations
-  method add(Math::Libgsl::Vector::Complex32 $b --> Int) { gsl_vector_complex_float_add($!vector, $b.vector) }
-  method sub(Math::Libgsl::Vector::Complex32 $b --> Int) { gsl_vector_complex_float_sub($!vector, $b.vector) }
-  method mul(Math::Libgsl::Vector::Complex32 $b --> Int) { gsl_vector_complex_float_mul($!vector, $b.vector) }
-  method div(Math::Libgsl::Vector::Complex32 $b --> Int) { gsl_vector_complex_float_div($!vector, $b.vector) }
-  method scale(Num(Cool) $x --> Int) {
-    my $c = alloc_gsl_complex_float;
-    #mgsl_complex_float_rect($x.re, $x.im, $c); # doesn't exist!
-    $c.dat[0] = $x.re;
-    $c.dat[1] = $x.im;
-    mgsl_vector_complex_float_scale($!vector, $c);
-    free_gsl_complex_float($c);
+  method copy(Math::Libgsl::Vector::Complex32 $src) {
+    my $ret = gsl_vector_complex_float_memcpy($!vector, $src.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
+    self
   }
-  method add-constant(Num(Cool) $x --> Int) {
+  method swap(Math::Libgsl::Vector::Complex32 $w) {
+    my $ret = gsl_vector_complex_float_swap($!vector, $w.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  # Exchanging elements
+  method swap-elems(Int $i, Int $j) {
+    my $ret = gsl_vector_complex_float_swap_elements($!vector, $i, $j);
+    fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method reverse() {
+    my $ret = gsl_vector_complex_float_reverse($!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't reverse the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  # Vector operations
+  method add(Math::Libgsl::Vector::Complex32 $b) {
+    my $ret = gsl_vector_complex_float_add($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method sub(Math::Libgsl::Vector::Complex32 $b) {
+    my $ret = gsl_vector_complex_float_sub($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method mul(Math::Libgsl::Vector::Complex32 $b) {
+    my $ret = gsl_vector_complex_float_mul($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method div(Math::Libgsl::Vector::Complex32 $b) {
+    my $ret = gsl_vector_complex_float_div($!vector, $b.vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scale(Num(Cool) $x) {
     my $c = alloc_gsl_complex_float;
     #mgsl_complex_float_rect($x.re, $x.im, $c); # doesn't exist!
     $c.dat[0] = $x.re;
     $c.dat[1] = $x.im;
-    mgsl_vector_complex_float_add_constant($!vector, $c);
+    my $ret = mgsl_vector_complex_float_scale($!vector, $c);
     free_gsl_complex_float($c);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scale the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method add-constant(Num(Cool) $x) {
+    my $c = alloc_gsl_complex_float;
+    #mgsl_complex_float_rect($x.re, $x.im, $c); # doesn't exist!
+    $c.dat[0] = $x.re;
+    $c.dat[1] = $x.im;
+    my $ret = mgsl_vector_complex_float_add_constant($!vector, $c);
+    free_gsl_complex_float($c);
+    fail X::Libgsl.new: errno => $ret, error => "Can't add a constant to all elements" if $ret ≠ GSL_SUCCESS;
+    self
   }
   # Vector properties
   method is-null(--> Bool)   { gsl_vector_complex_float_isnull($!vector)   ?? True !! False }
