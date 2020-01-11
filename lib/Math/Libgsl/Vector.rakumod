@@ -32,7 +32,7 @@ submethod DESTROY {
 method get(Int:D $index! --> Num) { gsl_vector_get($!vector, $index) }
 multi method AT-POS(Math::Libgsl::Vector:D: Int:D $index! --> Num) { gsl_vector_get(self.vector, $index) }
 multi method AT-POS(Math::Libgsl::Vector:D: Range:D $range! --> List) { gsl_vector_get(self.vector, $_) for $range }
-method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_set($!vector, $index, $x) }
+method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_set($!vector, $index, $x); self }
 method ASSIGN-POS(Math::Libgsl::Vector:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_set(self.vector, $index, $x) }
 method setall(Num(Cool) $x!) { gsl_vector_set_all($!vector, $x); self }
 method zero() { gsl_vector_set_zero($!vector); self }
@@ -42,10 +42,26 @@ method basis(Int:D $index!) {
   self
 }
 # IO
-method write(Str $filename! --> Int) { mgsl_vector_fwrite($filename, $!vector) }
-method read(Str $filename! --> Int) { mgsl_vector_fread($filename, $!vector) }
-method printf(Str $filename!, Str $format! --> Int) { mgsl_vector_fprintf($filename, $!vector, $format) }
-method scanf(Str $filename! --> Int) { mgsl_vector_fscanf($filename, $!vector) }
+method write(Str $filename!) {
+  my $ret = mgsl_vector_fwrite($filename, $!vector);
+  fail X::Libgsl.new: errno => $ret, error => "Can't write the vector" if $ret ≠ GSL_SUCCESS;
+  self
+}
+method read(Str $filename!) {
+  my $ret = mgsl_vector_fread($filename, $!vector);
+  fail X::Libgsl.new: errno => $ret, error => "Can't read the vector" if $ret ≠ GSL_SUCCESS;
+  self
+}
+method printf(Str $filename!, Str $format!) {
+  my $ret = mgsl_vector_fprintf($filename, $!vector, $format);
+  fail X::Libgsl.new: errno => $ret, error => "Can't print the vector" if $ret ≠ GSL_SUCCESS;
+  self
+}
+method scanf(Str $filename!) {
+  my $ret = mgsl_vector_fscanf($filename, $!vector);
+  fail X::Libgsl.new: errno => $ret, error => "Can't scan the vector" if $ret ≠ GSL_SUCCESS;
+  self
+}
 # View
 method subvector(size_t $offset, size_t $n) {
   my Math::Libgsl::Vector::View $vv .= new;
@@ -167,20 +183,36 @@ class Num32 {
   method get(Int:D $index! --> Num) { gsl_vector_float_get($!vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::Num32:D: Int:D $index! --> Num) { gsl_vector_float_get(self.vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::Num32:D: Range:D $range! --> List) { gsl_vector_float_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_float_set($!vector, $index, $x) }
+  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_float_set($!vector, $index, $x); self }
   method ASSIGN-POS(Math::Libgsl::Vector::Num32:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_float_set(self.vector, $index, $x) }
-  method setall(Num(Cool) $x!) { gsl_vector_float_set_all($!vector, $x) }
-  method zero() { gsl_vector_float_set_zero($!vector) }
+  method setall(Num(Cool) $x!) { gsl_vector_float_set_all($!vector, $x); self }
+  method zero() { gsl_vector_float_set_zero($!vector); self }
   method basis(Int:D $index!) {
     my $ret = gsl_vector_float_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
   }
   # IO
-  method write(Str $filename! --> Int) { mgsl_vector_float_fwrite($filename, $!vector) }
-  method read(Str $filename! --> Int) { mgsl_vector_float_fread($filename, $!vector) }
-  method printf(Str $filename!, Str $format! --> Int) { mgsl_vector_float_fprintf($filename, $!vector, $format) }
-  method scanf(Str $filename! --> Int) { mgsl_vector_float_fscanf($filename, $!vector) }
+  method write(Str $filename!) {
+    my $ret = mgsl_vector_float_fwrite($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't write the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method read(Str $filename!) {
+    my $ret = mgsl_vector_float_fread($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't read the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method printf(Str $filename!, Str $format!) {
+    my $ret = mgsl_vector_float_fprintf($filename, $!vector, $format);
+    fail X::Libgsl.new: errno => $ret, error => "Can't print the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scanf(Str $filename!) {
+    my $ret = mgsl_vector_float_fscanf($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scan the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # View
   method subvector(size_t $offset, size_t $n) {
     my Math::Libgsl::Vector::Num32::View $vv .= new;
@@ -303,20 +335,36 @@ class Int32 {
   method get(Int:D $index! --> Num) { gsl_vector_int_get($!vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::Int32:D: Int:D $index! --> Num) { gsl_vector_int_get(self.vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::Int32:D: Range:D $range! --> List) { gsl_vector_int_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_int_set($!vector, $index, $x) }
+  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_int_set($!vector, $index, $x); self }
   method ASSIGN-POS(Math::Libgsl::Vector::Int32:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_int_set(self.vector, $index, $x) }
-  method setall(Num(Cool) $x!) { gsl_vector_int_set_all($!vector, $x) }
-  method zero() { gsl_vector_int_set_zero($!vector) }
+  method setall(Num(Cool) $x!) { gsl_vector_int_set_all($!vector, $x); self }
+  method zero() { gsl_vector_int_set_zero($!vector); self }
   method basis(Int:D $index!) {
     my $ret = gsl_vector_int_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
   }
   # IO
-  method write(Str $filename! --> Int) { mgsl_vector_int_fwrite($filename, $!vector) }
-  method read(Str $filename! --> Int) { mgsl_vector_int_fread($filename, $!vector) }
-  method printf(Str $filename!, Str $format! --> Int) { mgsl_vector_int_fprintf($filename, $!vector, $format) }
-  method scanf(Str $filename! --> Int) { mgsl_vector_int_fscanf($filename, $!vector) }
+  method write(Str $filename!) {
+    my $ret = mgsl_vector_int_fwrite($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't write the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method read(Str $filename!) {
+    my $ret = mgsl_vector_int_fread($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't read the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method printf(Str $filename!, Str $format!) {
+    my $ret = mgsl_vector_int_fprintf($filename, $!vector, $format);
+    fail X::Libgsl.new: errno => $ret, error => "Can't print the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scanf(Str $filename!) {
+    my $ret = mgsl_vector_int_fscanf($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scan the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # View
   method subvector(size_t $offset, size_t $n) {
     my Math::Libgsl::Vector::Int32::View $vv .= new;
@@ -439,20 +487,36 @@ class UInt32 {
   method get(Int:D $index! --> Num) { gsl_vector_uint_get($!vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::UInt32:D: Int:D $index! --> Num) { gsl_vector_uint_get(self.vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::UInt32:D: Range:D $range! --> List) { gsl_vector_uint_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_uint_set($!vector, $index, $x) }
+  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_uint_set($!vector, $index, $x); self }
   method ASSIGN-POS(Math::Libgsl::Vector::UInt32:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_uint_set(self.vector, $index, $x) }
-  method setall(Num(Cool) $x!) { gsl_vector_uint_set_all($!vector, $x) }
-  method zero() { gsl_vector_uint_set_zero($!vector) }
+  method setall(Num(Cool) $x!) { gsl_vector_uint_set_all($!vector, $x); self }
+  method zero() { gsl_vector_uint_set_zero($!vector); self }
   method basis(Int:D $index!) {
     my $ret = gsl_vector_uint_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
   }
   # IO
-  method write(Str $filename! --> Int) { mgsl_vector_uint_fwrite($filename, $!vector) }
-  method read(Str $filename! --> Int) { mgsl_vector_uint_fread($filename, $!vector) }
-  method printf(Str $filename!, Str $format! --> Int) { mgsl_vector_uint_fprintf($filename, $!vector, $format) }
-  method scanf(Str $filename! --> Int) { mgsl_vector_uint_fscanf($filename, $!vector) }
+  method write(Str $filename!) {
+    my $ret = mgsl_vector_uint_fwrite($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't write the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method read(Str $filename!) {
+    my $ret = mgsl_vector_uint_fread($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't read the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method printf(Str $filename!, Str $format!) {
+    my $ret = mgsl_vector_uint_fprintf($filename, $!vector, $format);
+    fail X::Libgsl.new: errno => $ret, error => "Can't print the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scanf(Str $filename!) {
+    my $ret = mgsl_vector_uint_fscanf($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scan the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # View
   method subvector(size_t $offset, size_t $n) {
     my Math::Libgsl::Vector::UInt32::View $vv .= new;
@@ -575,20 +639,36 @@ class Int64 {
   method get(Int:D $index! --> Num) { gsl_vector_long_get($!vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::Int64:D: Int:D $index! --> Num) { gsl_vector_long_get(self.vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::Int64:D: Range:D $range! --> List) { gsl_vector_long_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_long_set($!vector, $index, $x) }
+  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_long_set($!vector, $index, $x); self }
   method ASSIGN-POS(Math::Libgsl::Vector::Int64:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_long_set(self.vector, $index, $x) }
-  method setall(Num(Cool) $x!) { gsl_vector_long_set_all($!vector, $x) }
-  method zero() { gsl_vector_long_set_zero($!vector) }
+  method setall(Num(Cool) $x!) { gsl_vector_long_set_all($!vector, $x); self }
+  method zero() { gsl_vector_long_set_zero($!vector); self }
   method basis(Int:D $index!) {
     my $ret = gsl_vector_long_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
   }
   # IO
-  method write(Str $filename! --> Int) { mgsl_vector_long_fwrite($filename, $!vector) }
-  method read(Str $filename! --> Int) { mgsl_vector_long_fread($filename, $!vector) }
-  method printf(Str $filename!, Str $format! --> Int) { mgsl_vector_long_fprintf($filename, $!vector, $format) }
-  method scanf(Str $filename! --> Int) { mgsl_vector_long_fscanf($filename, $!vector) }
+  method write(Str $filename!) {
+    my $ret = mgsl_vector_long_fwrite($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't write the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method read(Str $filename!) {
+    my $ret = mgsl_vector_long_fread($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't read the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method printf(Str $filename!, Str $format!) {
+    my $ret = mgsl_vector_long_fprintf($filename, $!vector, $format);
+    fail X::Libgsl.new: errno => $ret, error => "Can't print the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scanf(Str $filename!) {
+    my $ret = mgsl_vector_long_fscanf($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scan the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # View
   method subvector(size_t $offset, size_t $n) {
     my Math::Libgsl::Vector::Int64::View $vv .= new;
@@ -711,20 +791,36 @@ class UInt64 {
   method get(Int:D $index! --> Num) { gsl_vector_ulong_get($!vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::UInt64:D: Int:D $index! --> Num) { gsl_vector_ulong_get(self.vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::UInt64:D: Range:D $range! --> List) { gsl_vector_ulong_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_ulong_set($!vector, $index, $x) }
+  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_ulong_set($!vector, $index, $x); self }
   method ASSIGN-POS(Math::Libgsl::Vector::UInt64:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_ulong_set(self.vector, $index, $x) }
-  method setall(Num(Cool) $x!) { gsl_vector_ulong_set_all($!vector, $x) }
-  method zero() { gsl_vector_ulong_set_zero($!vector) }
+  method setall(Num(Cool) $x!) { gsl_vector_ulong_set_all($!vector, $x); self }
+  method zero() { gsl_vector_ulong_set_zero($!vector); self }
   method basis(Int:D $index!) {
     my $ret = gsl_vector_ulong_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
   }
   # IO
-  method write(Str $filename! --> Int) { mgsl_vector_ulong_fwrite($filename, $!vector) }
-  method read(Str $filename! --> Int) { mgsl_vector_ulong_fread($filename, $!vector) }
-  method printf(Str $filename!, Str $format! --> Int) { mgsl_vector_ulong_fprintf($filename, $!vector, $format) }
-  method scanf(Str $filename! --> Int) { mgsl_vector_ulong_fscanf($filename, $!vector) }
+  method write(Str $filename!) {
+    my $ret = mgsl_vector_ulong_fwrite($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't write the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method read(Str $filename!) {
+    my $ret = mgsl_vector_ulong_fread($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't read the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method printf(Str $filename!, Str $format!) {
+    my $ret = mgsl_vector_ulong_fprintf($filename, $!vector, $format);
+    fail X::Libgsl.new: errno => $ret, error => "Can't print the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scanf(Str $filename!) {
+    my $ret = mgsl_vector_ulong_fscanf($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scan the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # View
   method subvector(size_t $offset, size_t $n) {
     my Math::Libgsl::Vector::UInt64::View $vv .= new;
@@ -847,20 +943,36 @@ class Int16 {
   method get(Int:D $index! --> Num) { gsl_vector_short_get($!vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::Int16:D: Int:D $index! --> Num) { gsl_vector_short_get(self.vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::Int16:D: Range:D $range! --> List) { gsl_vector_short_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_short_set($!vector, $index, $x) }
+  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_short_set($!vector, $index, $x); self }
   method ASSIGN-POS(Math::Libgsl::Vector::Int16:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_short_set(self.vector, $index, $x) }
-  method setall(Num(Cool) $x!) { gsl_vector_short_set_all($!vector, $x) }
-  method zero() { gsl_vector_short_set_zero($!vector) }
+  method setall(Num(Cool) $x!) { gsl_vector_short_set_all($!vector, $x); self }
+  method zero() { gsl_vector_short_set_zero($!vector); self }
   method basis(Int:D $index!) {
     my $ret = gsl_vector_short_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
   }
   # IO
-  method write(Str $filename! --> Int) { mgsl_vector_short_fwrite($filename, $!vector) }
-  method read(Str $filename! --> Int) { mgsl_vector_short_fread($filename, $!vector) }
-  method printf(Str $filename!, Str $format! --> Int) { mgsl_vector_short_fprintf($filename, $!vector, $format) }
-  method scanf(Str $filename! --> Int) { mgsl_vector_short_fscanf($filename, $!vector) }
+  method write(Str $filename!) {
+    my $ret = mgsl_vector_short_fwrite($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't write the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method read(Str $filename!) {
+    my $ret = mgsl_vector_short_fread($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't read the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method printf(Str $filename!, Str $format!) {
+    my $ret = mgsl_vector_short_fprintf($filename, $!vector, $format);
+    fail X::Libgsl.new: errno => $ret, error => "Can't print the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scanf(Str $filename!) {
+    my $ret = mgsl_vector_short_fscanf($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scan the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # View
   method subvector(size_t $offset, size_t $n) {
     my Math::Libgsl::Vector::Int16::View $vv .= new;
@@ -983,20 +1095,36 @@ class UInt16 {
   method get(Int:D $index! --> Num) { gsl_vector_ushort_get($!vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::UInt16:D: Int:D $index! --> Num) { gsl_vector_ushort_get(self.vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::UInt16:D: Range:D $range! --> List) { gsl_vector_ushort_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_ushort_set($!vector, $index, $x) }
+  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_ushort_set($!vector, $index, $x); self }
   method ASSIGN-POS(Math::Libgsl::Vector::UInt16:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_ushort_set(self.vector, $index, $x) }
-  method setall(Num(Cool) $x!) { gsl_vector_ushort_set_all($!vector, $x) }
-  method zero() { gsl_vector_ushort_set_zero($!vector) }
+  method setall(Num(Cool) $x!) { gsl_vector_ushort_set_all($!vector, $x); self }
+  method zero() { gsl_vector_ushort_set_zero($!vector); self }
   method basis(Int:D $index!) {
     my $ret = gsl_vector_ushort_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
   }
   # IO
-  method write(Str $filename! --> Int) { mgsl_vector_ushort_fwrite($filename, $!vector) }
-  method read(Str $filename! --> Int) { mgsl_vector_ushort_fread($filename, $!vector) }
-  method printf(Str $filename!, Str $format! --> Int) { mgsl_vector_ushort_fprintf($filename, $!vector, $format) }
-  method scanf(Str $filename! --> Int) { mgsl_vector_ushort_fscanf($filename, $!vector) }
+  method write(Str $filename!) {
+    my $ret = mgsl_vector_ushort_fwrite($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't write the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method read(Str $filename!) {
+    my $ret = mgsl_vector_ushort_fread($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't read the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method printf(Str $filename!, Str $format!) {
+    my $ret = mgsl_vector_ushort_fprintf($filename, $!vector, $format);
+    fail X::Libgsl.new: errno => $ret, error => "Can't print the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scanf(Str $filename!) {
+    my $ret = mgsl_vector_ushort_fscanf($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scan the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # View
   method subvector(size_t $offset, size_t $n) {
     my Math::Libgsl::Vector::UInt16::View $vv .= new;
@@ -1119,20 +1247,36 @@ class Int8 {
   method get(Int:D $index! --> Num) { gsl_vector_char_get($!vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::Int8:D: Int:D $index! --> Num) { gsl_vector_char_get(self.vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::Int8:D: Range:D $range! --> List) { gsl_vector_char_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_char_set($!vector, $index, $x) }
+  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_char_set($!vector, $index, $x); self }
   method ASSIGN-POS(Math::Libgsl::Vector::Int8:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_char_set(self.vector, $index, $x) }
-  method setall(Num(Cool) $x!) { gsl_vector_char_set_all($!vector, $x) }
-  method zero() { gsl_vector_char_set_zero($!vector) }
+  method setall(Num(Cool) $x!) { gsl_vector_char_set_all($!vector, $x); self }
+  method zero() { gsl_vector_char_set_zero($!vector); self }
   method basis(Int:D $index!) {
     my $ret = gsl_vector_char_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
   }
   # IO
-  method write(Str $filename! --> Int) { mgsl_vector_char_fwrite($filename, $!vector) }
-  method read(Str $filename! --> Int) { mgsl_vector_char_fread($filename, $!vector) }
-  method printf(Str $filename!, Str $format! --> Int) { mgsl_vector_char_fprintf($filename, $!vector, $format) }
-  method scanf(Str $filename! --> Int) { mgsl_vector_char_fscanf($filename, $!vector) }
+  method write(Str $filename!) {
+    my $ret = mgsl_vector_char_fwrite($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't write the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method read(Str $filename!) {
+    my $ret = mgsl_vector_char_fread($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't read the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method printf(Str $filename!, Str $format!) {
+    my $ret = mgsl_vector_char_fprintf($filename, $!vector, $format);
+    fail X::Libgsl.new: errno => $ret, error => "Can't print the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scanf(Str $filename!) {
+    my $ret = mgsl_vector_char_fscanf($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scan the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # View
   method subvector(size_t $offset, size_t $n) {
     my Math::Libgsl::Vector::Int8::View $vv .= new;
@@ -1255,20 +1399,36 @@ class UInt8 {
   method get(Int:D $index! --> Num) { gsl_vector_uchar_get($!vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::UInt8:D: Int:D $index! --> Num) { gsl_vector_uchar_get(self.vector, $index) }
   multi method AT-POS(Math::Libgsl::Vector::UInt8:D: Range:D $range! --> List) { gsl_vector_uchar_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_uchar_set($!vector, $index, $x) }
+  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_uchar_set($!vector, $index, $x); self }
   method ASSIGN-POS(Math::Libgsl::Vector::UInt8:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_uchar_set(self.vector, $index, $x) }
-  method setall(Num(Cool) $x!) { gsl_vector_uchar_set_all($!vector, $x) }
-  method zero() { gsl_vector_uchar_set_zero($!vector) }
+  method setall(Num(Cool) $x!) { gsl_vector_uchar_set_all($!vector, $x); self }
+  method zero() { gsl_vector_uchar_set_zero($!vector); self }
   method basis(Int:D $index!) {
     my $ret = gsl_vector_uchar_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
   }
   # IO
-  method write(Str $filename! --> Int) { mgsl_vector_uchar_fwrite($filename, $!vector) }
-  method read(Str $filename! --> Int) { mgsl_vector_uchar_fread($filename, $!vector) }
-  method printf(Str $filename!, Str $format! --> Int) { mgsl_vector_uchar_fprintf($filename, $!vector, $format) }
-  method scanf(Str $filename! --> Int) { mgsl_vector_uchar_fscanf($filename, $!vector) }
+  method write(Str $filename!) {
+    my $ret = mgsl_vector_uchar_fwrite($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't write the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method read(Str $filename!) {
+    my $ret = mgsl_vector_uchar_fread($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't read the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method printf(Str $filename!, Str $format!) {
+    my $ret = mgsl_vector_uchar_fprintf($filename, $!vector, $format);
+    fail X::Libgsl.new: errno => $ret, error => "Can't print the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scanf(Str $filename!) {
+    my $ret = mgsl_vector_uchar_fscanf($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scan the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # View
   method subvector(size_t $offset, size_t $n) {
     my Math::Libgsl::Vector::UInt8::View $vv .= new;
@@ -1418,6 +1578,7 @@ class Complex64 {
     mgsl_complex_rect($x.re, $x.im, $c);
     mgsl_vector_complex_set($!vector, $index, $c);
     free_gsl_complex($c);
+    self
   }
   method ASSIGN-POS(Math::Libgsl::Vector::Complex64:D: Int:D $index!, Num(Cool) $x!) {
     my $c = alloc_gsl_complex;
@@ -1430,18 +1591,35 @@ class Complex64 {
     mgsl_complex_rect($x.re, $x.im, $c);
     mgsl_vector_complex_set_all($!vector, $c);
     free_gsl_complex($c);
+    self
   }
-  method zero() { gsl_vector_complex_set_zero($!vector) }
+  method zero() { gsl_vector_complex_set_zero($!vector); self }
   method basis(Int:D $index!) {
     my $ret = gsl_vector_complex_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
   }
   # IO
-  method write(Str $filename! --> Int) { mgsl_vector_complex_fwrite($filename, $!vector) }
-  method read(Str $filename! --> Int) { mgsl_vector_complex_fread($filename, $!vector) }
-  method printf(Str $filename!, Str $format! --> Int) { mgsl_vector_complex_fprintf($filename, $!vector, $format) }
-  method scanf(Str $filename! --> Int) { mgsl_vector_complex_fscanf($filename, $!vector) }
+  method write(Str $filename!) {
+    my $ret = mgsl_vector_complex_fwrite($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't write the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method read(Str $filename!) {
+    my $ret = mgsl_vector_complex_fread($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't read the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method printf(Str $filename!, Str $format!) {
+    my $ret = mgsl_vector_complex_fprintf($filename, $!vector, $format);
+    fail X::Libgsl.new: errno => $ret, error => "Can't print the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scanf(Str $filename!) {
+    my $ret = mgsl_vector_complex_fscanf($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scan the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # View
   method subvector(size_t $offset, size_t $n) {
     my Math::Libgsl::Vector::Complex64::View $vv .= new;
@@ -1588,6 +1766,7 @@ class Complex32 {
     mgsl_complex_rect($x.re, $x.im, $c);
     mgsl_vector_complex_float_set($!vector, $index, $c);
     free_gsl_complex_float($c);
+    self
   }
   method ASSIGN-POS(Math::Libgsl::Vector::Complex32:D: Int:D $index!, Num(Cool) $x!) {
     my $c = alloc_gsl_complex_float;
@@ -1602,18 +1781,35 @@ class Complex32 {
     $c.dat[1] = $x.im;
     mgsl_vector_complex_float_set_all($!vector, $c);
     free_gsl_complex_float($c);
+    self
   }
-  method zero() { gsl_vector_complex_float_set_zero($!vector) }
+  method zero() { gsl_vector_complex_float_set_zero($!vector); self }
   method basis(Int:D $index!) {
     my $ret = gsl_vector_complex_float_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
   }
   # IO
-  method write(Str $filename! --> Int) { mgsl_vector_complex_float_fwrite($filename, $!vector) }
-  method read(Str $filename! --> Int) { mgsl_vector_complex_float_fread($filename, $!vector) }
-  method printf(Str $filename!, Str $format! --> Int) { mgsl_vector_complex_float_fprintf($filename, $!vector, $format) }
-  method scanf(Str $filename! --> Int) { mgsl_vector_complex_float_fscanf($filename, $!vector) }
+  method write(Str $filename!) {
+    my $ret = mgsl_vector_complex_float_fwrite($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't write the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method read(Str $filename!) {
+    my $ret = mgsl_vector_complex_float_fread($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't read the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method printf(Str $filename!, Str $format!) {
+    my $ret = mgsl_vector_complex_float_fprintf($filename, $!vector, $format);
+    fail X::Libgsl.new: errno => $ret, error => "Can't print the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
+  method scanf(Str $filename!) {
+    my $ret = mgsl_vector_complex_float_fscanf($filename, $!vector);
+    fail X::Libgsl.new: errno => $ret, error => "Can't scan the vector" if $ret ≠ GSL_SUCCESS;
+    self
+  }
   # View
   method subvector(size_t $offset, size_t $n) {
     my Math::Libgsl::Vector::Complex32::View $vv .= new;

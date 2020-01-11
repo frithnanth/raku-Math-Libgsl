@@ -35,9 +35,9 @@ subtest {
   $v1.setall(1);
   my $filename = 't/vector.dat';
   LEAVE { with $filename.IO { .unlink if .e } }
-  ok $v1.write($filename) == GSL_SUCCESS, 'can write a vector to file';
-  ok $v1.read($filename) == GSL_SUCCESS, 'can read a vector from file';
-  ok $v1.printf($filename, "%3.1lf") == GSL_SUCCESS, 'can print a vector to file';
+  lives-ok { $v1.write($filename) }, 'can write a vector to file';
+  lives-ok { $v1.read($filename) }, 'can read a vector from file';
+  lives-ok { $v1.printf($filename, "%3.1lf") }, 'can print a vector to file';
   is-deeply $filename.IO.lines, '1.0' xx 10, 'vector file ok';
 }, 'vector IO';
 
