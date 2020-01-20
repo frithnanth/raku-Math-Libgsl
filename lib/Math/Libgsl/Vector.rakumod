@@ -8,7 +8,7 @@ use Math::Libgsl::Exception;
 use Math::Libgsl::Constants;
 use NativeCall;
 
-class View {
+class VView {
   has gsl_vector_view $.view;
   submethod BUILD { $!view = alloc_gsl_vector_view }
   submethod DESTROY { free_gsl_vector_view($!view) }
@@ -29,14 +29,20 @@ submethod DESTROY {
   gsl_vector_free($!vector);
 }
 # Accessors
-method get(Int:D $index! --> Num) { gsl_vector_get($!vector, $index) }
-multi method AT-POS(Math::Libgsl::Vector:D: Int:D $index! --> Num) { gsl_vector_get(self.vector, $index) }
-multi method AT-POS(Math::Libgsl::Vector:D: Range:D $range! --> List) { gsl_vector_get(self.vector, $_) for $range }
-method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_set($!vector, $index, $x); self }
-method ASSIGN-POS(Math::Libgsl::Vector:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_set(self.vector, $index, $x) }
+method get(Int:D $index! where * < $!vector.size --> Num) { gsl_vector_get($!vector, $index) }
+multi method AT-POS(Math::Libgsl::Vector:D: Int:D $index! where * < $!vector.size --> Num) {
+  gsl_vector_get(self.vector, $index)
+}
+multi method AT-POS(Math::Libgsl::Vector:D: Range:D $range! where { .max < $!vector.size && .min ≥ 0 } --> List) {
+  gsl_vector_get(self.vector, $_) for $range
+}
+method set(Int:D $index! where * < $!vector.size, Num(Cool) $x!) { gsl_vector_set($!vector, $index, $x); self }
+method ASSIGN-POS(Math::Libgsl::Vector:D: Int:D $index! where * < $!vector.size, Num(Cool) $x!) {
+  gsl_vector_set(self.vector, $index, $x)
+}
 method setall(Num(Cool) $x!) { gsl_vector_set_all($!vector, $x); self }
 method zero() { gsl_vector_set_zero($!vector); self }
-method basis(Int:D $index!) {
+method basis(Int:D $index! where * < $!vector.size) {
   my $ret = gsl_vector_set_basis($!vector, $index);
   fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
   self
@@ -63,37 +69,39 @@ method scanf(Str $filename!) {
   self
 }
 # View
-method subvector(size_t $offset, size_t $n) {
-  my Math::Libgsl::Vector::View $vv .= new;
+method subvector(size_t $offset where * < $!vector.size, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+  my Math::Libgsl::Vector::VView $vv .= new;
   Math::Libgsl::Vector.new: vector => mgsl_vector_subvector($vv.view, $!vector, $offset, $n);
 }
-method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-  my Math::Libgsl::Vector::View $vv .= new;
+method subvector-stride(size_t $offset where * < $!vector.size, size_t $stride, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+  my Math::Libgsl::Vector::VView $vv .= new;
   Math::Libgsl::Vector.new: vector => mgsl_vector_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
 }
-sub view-array(@array) is export {
-  my Math::Libgsl::Vector::View $vv .= new;
+sub vec-view-array(@array) is export {
+  my Math::Libgsl::Vector::VView $vv .= new;
   my CArray[num64] $a .= new: @array».Num;
   Math::Libgsl::Vector.new: vector => mgsl_vector_view_array($vv.view, $a, @array.elems);
 }
-sub view-array-stride(@array, size_t $stride) is export {
-  my Math::Libgsl::Vector::View $vv .= new;
+sub vec-view-array-stride(@array, size_t $stride) is export {
+  my Math::Libgsl::Vector::VView $vv .= new;
   my CArray[num64] $a .= new: @array».Num;
   Math::Libgsl::Vector.new: vector => mgsl_vector_view_array_with_stride($vv.view, $a, $stride, @array.elems);
 }
 # Copy
-method copy(Math::Libgsl::Vector $src) {
+method copy(Math::Libgsl::Vector $src where $!vector.size == .vector.size) {
   my $ret = gsl_vector_memcpy($!vector, $src.vector);
   fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
   self
 }
-method swap(Math::Libgsl::Vector $w) {
+method swap(Math::Libgsl::Vector $w where $!vector.size == .vector.size) {
   my $ret = gsl_vector_swap($!vector, $w.vector);
   fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
   self
 }
 # Exchanging elements
-method swap-elems(Int $i, Int $j) {
+method swap-elems(Int $i where * < $!vector.size, Int $j where * < $!vector.size) {
   my $ret = gsl_vector_swap_elements($!vector, $i, $j);
   fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
   self
@@ -104,22 +112,22 @@ method reverse() {
   self
 }
 # Vector operations
-method add(Math::Libgsl::Vector $b) {
+method add(Math::Libgsl::Vector $b where $!vector.size == .vector.size) {
   my $ret = gsl_vector_add($!vector, $b.vector);
   fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
   self
 }
-method sub(Math::Libgsl::Vector $b) {
+method sub(Math::Libgsl::Vector $b where $!vector.size == .vector.size) {
   my $ret = gsl_vector_sub($!vector, $b.vector);
   fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
   self
 }
-method mul(Math::Libgsl::Vector $b) {
+method mul(Math::Libgsl::Vector $b where $!vector.size == .vector.size) {
   my $ret = gsl_vector_mul($!vector, $b.vector);
   fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
   self
 }
-method div(Math::Libgsl::Vector $b) {
+method div(Math::Libgsl::Vector $b where $!vector.size == .vector.size) {
   my $ret = gsl_vector_div($!vector, $b.vector);
   fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
   self
@@ -159,7 +167,7 @@ method is-nonneg(--> Bool) { gsl_vector_isnonneg($!vector) ?? True !! False }
 method is-equal(Math::Libgsl::Vector $b --> Bool) { gsl_vector_equal($!vector, $b.vector) ?? True !! False }
 
 class Num32 {
-  class View {
+  class VView {
     has gsl_vector_float_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_float_view }
     submethod DESTROY { free_gsl_vector_float_view($!view) }
@@ -180,14 +188,20 @@ class Num32 {
     gsl_vector_float_free($!vector);
   }
   # Accessors
-  method get(Int:D $index! --> Num) { gsl_vector_float_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Num32:D: Int:D $index! --> Num) { gsl_vector_float_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Num32:D: Range:D $range! --> List) { gsl_vector_float_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_float_set($!vector, $index, $x); self }
-  method ASSIGN-POS(Math::Libgsl::Vector::Num32:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_float_set(self.vector, $index, $x) }
+  method get(Int:D $index! where * < $!vector.size --> Num) { gsl_vector_float_get($!vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::Num32:D: Int:D $index! where * < $!vector.size --> Num) {
+    gsl_vector_float_get(self.vector, $index)
+  }
+  multi method AT-POS(Math::Libgsl::Vector::Num32:D: Range:D $range! where { .max < $!vector.size && .min ≥ 0 } --> List) {
+    gsl_vector_float_get(self.vector, $_) for $range
+  }
+  method set(Int:D $index! where * < $!vector.size, Num(Cool) $x!) { gsl_vector_float_set($!vector, $index, $x); self }
+  method ASSIGN-POS(Math::Libgsl::Vector::Num32:D: Int:D $index! where * < $!vector.size, Num(Cool) $x!) {
+    gsl_vector_float_set(self.vector, $index, $x)
+  }
   method setall(Num(Cool) $x!) { gsl_vector_float_set_all($!vector, $x); self }
   method zero() { gsl_vector_float_set_zero($!vector); self }
-  method basis(Int:D $index!) {
+  method basis(Int:D $index! where * < $!vector.size) {
     my $ret = gsl_vector_float_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
@@ -214,37 +228,39 @@ class Num32 {
     self
   }
   # View
-  method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::Num32::View $vv .= new;
+  method subvector(size_t $offset where * < $!vector.size, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Num32::VView $vv .= new;
     Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_float_subvector($vv.view, $!vector, $offset, $n);
   }
-  method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::Num32::View $vv .= new;
+  method subvector-stride(size_t $offset where * < $!vector.size, size_t $stride, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Num32::VView $vv .= new;
     Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_float_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-float-array(@array) is export {
-    my Math::Libgsl::Vector::Num32::View $vv .= new;
+    my Math::Libgsl::Vector::Num32::VView $vv .= new;
     my CArray[num32] $a .= new: @array».Num;
     Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_float_view_array($vv.view, $a, @array.elems);
   }
   sub view-float-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::Num32::View $vv .= new;
+    my Math::Libgsl::Vector::Num32::VView $vv .= new;
     my CArray[num32] $a .= new: @array».Num;
     Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_float_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Num32 $src) {
+  method copy(Math::Libgsl::Vector::Num32 $src where $!vector.size == .vector.size) {
     my $ret = gsl_vector_float_memcpy($!vector, $src.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method swap(Math::Libgsl::Vector::Num32 $w) {
+  method swap(Math::Libgsl::Vector::Num32 $w where $!vector.size == .vector.size) {
     my $ret = gsl_vector_float_swap($!vector, $w.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j) {
+  method swap-elems(Int $i where * < $!vector.size, Int $j where * < $!vector.size) {
     my $ret = gsl_vector_float_swap_elements($!vector, $i, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
     self
@@ -255,22 +271,22 @@ class Num32 {
     self
   }
   # Vector operations
-  method add(Math::Libgsl::Vector::Num32 $b) {
+  method add(Math::Libgsl::Vector::Num32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_float_add($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method sub(Math::Libgsl::Vector::Num32 $b) {
+  method sub(Math::Libgsl::Vector::Num32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_float_sub($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method mul(Math::Libgsl::Vector::Num32 $b) {
+  method mul(Math::Libgsl::Vector::Num32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_float_mul($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method div(Math::Libgsl::Vector::Num32 $b) {
+  method div(Math::Libgsl::Vector::Num32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_float_div($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
     self
@@ -311,7 +327,7 @@ class Num32 {
 }
 
 class Int32 {
-  class View {
+  class VView {
     has gsl_vector_int_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_int_view }
     submethod DESTROY { free_gsl_vector_int_view($!view) }
@@ -332,14 +348,20 @@ class Int32 {
     gsl_vector_int_free($!vector);
   }
   # Accessors
-  method get(Int:D $index! --> Num) { gsl_vector_int_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Int32:D: Int:D $index! --> Num) { gsl_vector_int_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Int32:D: Range:D $range! --> List) { gsl_vector_int_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_int_set($!vector, $index, $x); self }
-  method ASSIGN-POS(Math::Libgsl::Vector::Int32:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_int_set(self.vector, $index, $x) }
+  method get(Int:D $index! where * < $!vector.size --> Num) { gsl_vector_int_get($!vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::Int32:D: Int:D $index! where * < $!vector.size --> Num) {
+    gsl_vector_int_get(self.vector, $index)
+  }
+  multi method AT-POS(Math::Libgsl::Vector::Int32:D: Range:D $range! where { .max < $!vector.size && .min ≥ 0 } --> List) {
+    gsl_vector_int_get(self.vector, $_) for $range
+  }
+  method set(Int:D $index! where * < $!vector.size, Num(Cool) $x!) { gsl_vector_int_set($!vector, $index, $x); self }
+  method ASSIGN-POS(Math::Libgsl::Vector::Int32:D: Int:D $index! where * < $!vector.size, Num(Cool) $x!) {
+    gsl_vector_int_set(self.vector, $index, $x)
+  }
   method setall(Num(Cool) $x!) { gsl_vector_int_set_all($!vector, $x); self }
   method zero() { gsl_vector_int_set_zero($!vector); self }
-  method basis(Int:D $index!) {
+  method basis(Int:D $index! where * < $!vector.size) {
     my $ret = gsl_vector_int_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
@@ -366,37 +388,39 @@ class Int32 {
     self
   }
   # View
-  method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::Int32::View $vv .= new;
+  method subvector(size_t $offset where * < $!vector.size, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Int32::VView $vv .= new;
     Math::Libgsl::Vector::Int32.new: vector => mgsl_vector_int_subvector($vv.view, $!vector, $offset, $n);
   }
-  method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::Int32::View $vv .= new;
+  method subvector-stride(size_t $offset where * < $!vector.size, size_t $stride, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Int32::VView $vv .= new;
     Math::Libgsl::Vector::Int32.new: vector => mgsl_vector_int_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-int32-array(@array) is export {
-    my Math::Libgsl::Vector::Int32::View $vv .= new;
+    my Math::Libgsl::Vector::Int32::VView $vv .= new;
     my CArray[int32] $a .= new: @array».Num;
     Math::Libgsl::Vector::Int32.new: vector => mgsl_vector_int_view_array($vv.view, $a, @array.elems);
   }
   sub view-int32-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::Int32::View $vv .= new;
+    my Math::Libgsl::Vector::Int32::VView $vv .= new;
     my CArray[int32] $a .= new: @array».Num;
     Math::Libgsl::Vector::Int32.new: vector => mgsl_vector_int_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Int32 $src) {
+  method copy(Math::Libgsl::Vector::Int32 $src where $!vector.size == .vector.size) {
     my $ret = gsl_vector_int_memcpy($!vector, $src.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method swap(Math::Libgsl::Vector::Int32 $w) {
+  method swap(Math::Libgsl::Vector::Int32 $w where $!vector.size == .vector.size) {
     my $ret = gsl_vector_int_swap($!vector, $w.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j) {
+  method swap-elems(Int $i where * < $!vector.size, Int $j where * < $!vector.size) {
     my $ret = gsl_vector_int_swap_elements($!vector, $i, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
     self
@@ -407,22 +431,22 @@ class Int32 {
     self
   }
   # Vector operations
-  method add(Math::Libgsl::Vector::Int32 $b) {
+  method add(Math::Libgsl::Vector::Int32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_int_add($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method sub(Math::Libgsl::Vector::Int32 $b) {
+  method sub(Math::Libgsl::Vector::Int32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_int_sub($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method mul(Math::Libgsl::Vector::Int32 $b) {
+  method mul(Math::Libgsl::Vector::Int32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_int_mul($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method div(Math::Libgsl::Vector::Int32 $b) {
+  method div(Math::Libgsl::Vector::Int32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_int_div($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
     self
@@ -463,7 +487,7 @@ class Int32 {
 }
 
 class UInt32 {
-  class View {
+  class VView {
     has gsl_vector_uint_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_uint_view }
     submethod DESTROY { free_gsl_vector_uint_view($!view) }
@@ -484,14 +508,20 @@ class UInt32 {
     gsl_vector_uint_free($!vector);
   }
   # Accessors
-  method get(Int:D $index! --> Num) { gsl_vector_uint_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::UInt32:D: Int:D $index! --> Num) { gsl_vector_uint_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::UInt32:D: Range:D $range! --> List) { gsl_vector_uint_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_uint_set($!vector, $index, $x); self }
-  method ASSIGN-POS(Math::Libgsl::Vector::UInt32:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_uint_set(self.vector, $index, $x) }
+  method get(Int:D $index! where * < $!vector.size --> Num) { gsl_vector_uint_get($!vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::UInt32:D: Int:D $index! where * < $!vector.size --> Num) {
+    gsl_vector_uint_get(self.vector, $index)
+  }
+  multi method AT-POS(Math::Libgsl::Vector::UInt32:D: Range:D $range! where { .max < $!vector.size && .min ≥ 0 } --> List) {
+    gsl_vector_uint_get(self.vector, $_) for $range
+  }
+  method set(Int:D $index! where * < $!vector.size, Num(Cool) $x!) { gsl_vector_uint_set($!vector, $index, $x); self }
+  method ASSIGN-POS(Math::Libgsl::Vector::UInt32:D: Int:D $index! where * < $!vector.size, Num(Cool) $x!) {
+    gsl_vector_uint_set(self.vector, $index, $x)
+  }
   method setall(Num(Cool) $x!) { gsl_vector_uint_set_all($!vector, $x); self }
   method zero() { gsl_vector_uint_set_zero($!vector); self }
-  method basis(Int:D $index!) {
+  method basis(Int:D $index! where * < $!vector.size) {
     my $ret = gsl_vector_uint_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
@@ -518,37 +548,39 @@ class UInt32 {
     self
   }
   # View
-  method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::UInt32::View $vv .= new;
+  method subvector(size_t $offset where * < $!vector.size, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::UInt32::VView $vv .= new;
     Math::Libgsl::Vector::UInt32.new: vector => mgsl_vector_uint_subvector($vv.view, $!vector, $offset, $n);
   }
-  method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::UInt32::View $vv .= new;
+  method subvector-stride(size_t $offset where * < $!vector.size, size_t $stride, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::UInt32::VView $vv .= new;
     Math::Libgsl::Vector::UInt32.new: vector => mgsl_vector_uint_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-uint32-array(@array) is export {
-    my Math::Libgsl::Vector::UInt32::View $vv .= new;
+    my Math::Libgsl::Vector::UInt32::VView $vv .= new;
     my CArray[uint32] $a .= new: @array».Num;
     Math::Libgsl::Vector::UInt32.new: vector => mgsl_vector_uint_view_array($vv.view, $a, @array.elems);
   }
   sub view-uint32-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::UInt32::View $vv .= new;
+    my Math::Libgsl::Vector::UInt32::VView $vv .= new;
     my CArray[uint32] $a .= new: @array».Num;
     Math::Libgsl::Vector::UInt32.new: vector => mgsl_vector_uint_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::UInt32 $src) {
+  method copy(Math::Libgsl::Vector::UInt32 $src where $!vector.size == .vector.size) {
     my $ret = gsl_vector_uint_memcpy($!vector, $src.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method swap(Math::Libgsl::Vector::UInt32 $w) {
+  method swap(Math::Libgsl::Vector::UInt32 $w where $!vector.size == .vector.size) {
     my $ret = gsl_vector_uint_swap($!vector, $w.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j) {
+  method swap-elems(Int $i where * < $!vector.size, Int $j where * < $!vector.size) {
     my $ret = gsl_vector_uint_swap_elements($!vector, $i, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
     self
@@ -559,22 +591,22 @@ class UInt32 {
     self
   }
   # Vector operations
-  method add(Math::Libgsl::Vector::UInt32 $b) {
+  method add(Math::Libgsl::Vector::UInt32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_uint_add($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method sub(Math::Libgsl::Vector::UInt32 $b) {
+  method sub(Math::Libgsl::Vector::UInt32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_uint_sub($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method mul(Math::Libgsl::Vector::UInt32 $b) {
+  method mul(Math::Libgsl::Vector::UInt32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_uint_mul($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method div(Math::Libgsl::Vector::UInt32 $b) {
+  method div(Math::Libgsl::Vector::UInt32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_uint_div($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
     self
@@ -615,7 +647,7 @@ class UInt32 {
 }
 
 class Int64 {
-  class View {
+  class VView {
     has gsl_vector_long_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_long_view }
     submethod DESTROY { free_gsl_vector_long_view($!view) }
@@ -636,14 +668,20 @@ class Int64 {
     gsl_vector_long_free($!vector);
   }
   # Accessors
-  method get(Int:D $index! --> Num) { gsl_vector_long_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Int64:D: Int:D $index! --> Num) { gsl_vector_long_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Int64:D: Range:D $range! --> List) { gsl_vector_long_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_long_set($!vector, $index, $x); self }
-  method ASSIGN-POS(Math::Libgsl::Vector::Int64:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_long_set(self.vector, $index, $x) }
+  method get(Int:D $index! where * < $!vector.size --> Num) { gsl_vector_long_get($!vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::Int64:D: Int:D $index! where * < $!vector.size --> Num) {
+    gsl_vector_long_get(self.vector, $index)
+  }
+  multi method AT-POS(Math::Libgsl::Vector::Int64:D: Range:D $range! where { .max < $!vector.size && .min ≥ 0 } --> List) {
+    gsl_vector_long_get(self.vector, $_) for $range
+  }
+  method set(Int:D $index! where * < $!vector.size, Num(Cool) $x!) { gsl_vector_long_set($!vector, $index, $x); self }
+  method ASSIGN-POS(Math::Libgsl::Vector::Int64:D: Int:D $index! where * < $!vector.size, Num(Cool) $x!) {
+    gsl_vector_long_set(self.vector, $index, $x)
+  }
   method setall(Num(Cool) $x!) { gsl_vector_long_set_all($!vector, $x); self }
   method zero() { gsl_vector_long_set_zero($!vector); self }
-  method basis(Int:D $index!) {
+  method basis(Int:D $index! where * < $!vector.size) {
     my $ret = gsl_vector_long_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
@@ -670,37 +708,39 @@ class Int64 {
     self
   }
   # View
-  method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::Int64::View $vv .= new;
+  method subvector(size_t $offset where * < $!vector.size, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Int64::VView $vv .= new;
     Math::Libgsl::Vector::Int64.new: vector => mgsl_vector_long_subvector($vv.view, $!vector, $offset, $n);
   }
-  method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::Int64::View $vv .= new;
+  method subvector-stride(size_t $offset where * < $!vector.size, size_t $stride, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Int64::VView $vv .= new;
     Math::Libgsl::Vector::Int64.new: vector => mgsl_vector_long_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-long-array(@array) is export {
-    my Math::Libgsl::Vector::Int64::View $vv .= new;
+    my Math::Libgsl::Vector::Int64::VView $vv .= new;
     my CArray[int64] $a .= new: @array».Num;
     Math::Libgsl::Vector::Int64.new: vector => mgsl_vector_long_view_array($vv.view, $a, @array.elems);
   }
   sub view-long-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::Int64::View $vv .= new;
+    my Math::Libgsl::Vector::Int64::VView $vv .= new;
     my CArray[int64] $a .= new: @array».Num;
     Math::Libgsl::Vector::Int64.new: vector => mgsl_vector_long_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Int64 $src) {
+  method copy(Math::Libgsl::Vector::Int64 $src where $!vector.size == .vector.size) {
     my $ret = gsl_vector_long_memcpy($!vector, $src.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method swap(Math::Libgsl::Vector::Int64 $w) {
+  method swap(Math::Libgsl::Vector::Int64 $w where $!vector.size == .vector.size) {
     my $ret = gsl_vector_long_swap($!vector, $w.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j) {
+  method swap-elems(Int $i where * < $!vector.size, Int $j where * < $!vector.size) {
     my $ret = gsl_vector_long_swap_elements($!vector, $i, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
     self
@@ -711,22 +751,22 @@ class Int64 {
     self
   }
   # Vector operations
-  method add(Math::Libgsl::Vector::Int64 $b) {
+  method add(Math::Libgsl::Vector::Int64 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_long_add($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method sub(Math::Libgsl::Vector::Int64 $b) {
+  method sub(Math::Libgsl::Vector::Int64 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_long_sub($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method mul(Math::Libgsl::Vector::Int64 $b) {
+  method mul(Math::Libgsl::Vector::Int64 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_long_mul($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method div(Math::Libgsl::Vector::Int64 $b) {
+  method div(Math::Libgsl::Vector::Int64 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_long_div($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
     self
@@ -767,7 +807,7 @@ class Int64 {
 }
 
 class UInt64 {
-  class View {
+  class VView {
     has gsl_vector_ulong_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_ulong_view }
     submethod DESTROY { free_gsl_vector_ulong_view($!view) }
@@ -788,14 +828,20 @@ class UInt64 {
     gsl_vector_ulong_free($!vector);
   }
   # Accessors
-  method get(Int:D $index! --> Num) { gsl_vector_ulong_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::UInt64:D: Int:D $index! --> Num) { gsl_vector_ulong_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::UInt64:D: Range:D $range! --> List) { gsl_vector_ulong_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_ulong_set($!vector, $index, $x); self }
-  method ASSIGN-POS(Math::Libgsl::Vector::UInt64:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_ulong_set(self.vector, $index, $x) }
+  method get(Int:D $index! where * < $!vector.size --> Num) { gsl_vector_ulong_get($!vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::UInt64:D: Int:D $index! where * < $!vector.size --> Num) {
+    gsl_vector_ulong_get(self.vector, $index)
+  }
+  multi method AT-POS(Math::Libgsl::Vector::UInt64:D: Range:D $range! where { .max < $!vector.size && .min ≥ 0 } --> List) {
+    gsl_vector_ulong_get(self.vector, $_) for $range
+  }
+  method set(Int:D $index! where * < $!vector.size, Num(Cool) $x!) { gsl_vector_ulong_set($!vector, $index, $x); self }
+  method ASSIGN-POS(Math::Libgsl::Vector::UInt64:D: Int:D $index! where * < $!vector.size, Num(Cool) $x!) {
+    gsl_vector_ulong_set(self.vector, $index, $x)
+  }
   method setall(Num(Cool) $x!) { gsl_vector_ulong_set_all($!vector, $x); self }
   method zero() { gsl_vector_ulong_set_zero($!vector); self }
-  method basis(Int:D $index!) {
+  method basis(Int:D $index! where * < $!vector.size) {
     my $ret = gsl_vector_ulong_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
@@ -822,37 +868,39 @@ class UInt64 {
     self
   }
   # View
-  method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::UInt64::View $vv .= new;
+  method subvector(size_t $offset where * < $!vector.size, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::UInt64::VView $vv .= new;
     Math::Libgsl::Vector::UInt64.new: vector => mgsl_vector_ulong_subvector($vv.view, $!vector, $offset, $n);
   }
-  method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::UInt64::View $vv .= new;
+  method subvector-stride(size_t $offset where * < $!vector.size, size_t $stride, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::UInt64::VView $vv .= new;
     Math::Libgsl::Vector::UInt64.new: vector => mgsl_vector_ulong_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-ulong-array(@array) is export {
-    my Math::Libgsl::Vector::UInt64::View $vv .= new;
+    my Math::Libgsl::Vector::UInt64::VView $vv .= new;
     my CArray[uint64] $a .= new: @array».Num;
     Math::Libgsl::Vector::UInt64.new: vector => mgsl_vector_ulong_view_array($vv.view, $a, @array.elems);
   }
   sub view-ulong-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::UInt64::View $vv .= new;
+    my Math::Libgsl::Vector::UInt64::VView $vv .= new;
     my CArray[uint64] $a .= new: @array».Num;
     Math::Libgsl::Vector::UInt64.new: vector => mgsl_vector_ulong_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::UInt64 $src) {
+  method copy(Math::Libgsl::Vector::UInt64 $src where $!vector.size == .vector.size) {
     my $ret = gsl_vector_ulong_memcpy($!vector, $src.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method swap(Math::Libgsl::Vector::UInt64 $w) {
+  method swap(Math::Libgsl::Vector::UInt64 $w where $!vector.size == .vector.size) {
     my $ret = gsl_vector_ulong_swap($!vector, $w.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j) {
+  method swap-elems(Int $i where * < $!vector.size, Int $j where * < $!vector.size) {
     my $ret = gsl_vector_ulong_swap_elements($!vector, $i, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
     self
@@ -863,22 +911,22 @@ class UInt64 {
     self
   }
   # Vector operations
-  method add(Math::Libgsl::Vector::UInt64 $b) {
+  method add(Math::Libgsl::Vector::UInt64 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_ulong_add($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method sub(Math::Libgsl::Vector::UInt64 $b) {
+  method sub(Math::Libgsl::Vector::UInt64 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_ulong_sub($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method mul(Math::Libgsl::Vector::UInt64 $b) {
+  method mul(Math::Libgsl::Vector::UInt64 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_ulong_mul($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method div(Math::Libgsl::Vector::UInt64 $b) {
+  method div(Math::Libgsl::Vector::UInt64 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_ulong_div($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
     self
@@ -919,7 +967,7 @@ class UInt64 {
 }
 
 class Int16 {
-  class View {
+  class VView {
     has gsl_vector_short_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_short_view }
     submethod DESTROY { free_gsl_vector_short_view($!view) }
@@ -940,14 +988,20 @@ class Int16 {
     gsl_vector_short_free($!vector);
   }
   # Accessors
-  method get(Int:D $index! --> Num) { gsl_vector_short_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Int16:D: Int:D $index! --> Num) { gsl_vector_short_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Int16:D: Range:D $range! --> List) { gsl_vector_short_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_short_set($!vector, $index, $x); self }
-  method ASSIGN-POS(Math::Libgsl::Vector::Int16:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_short_set(self.vector, $index, $x) }
+  method get(Int:D $index! where * < $!vector.size --> Num) { gsl_vector_short_get($!vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::Int16:D: Int:D $index! where * < $!vector.size --> Num) {
+    gsl_vector_short_get(self.vector, $index)
+  }
+  multi method AT-POS(Math::Libgsl::Vector::Int16:D: Range:D $range! where { .max < $!vector.size && .min ≥ 0 } --> List) {
+    gsl_vector_short_get(self.vector, $_) for $range
+  }
+  method set(Int:D $index! where * < $!vector.size, Num(Cool) $x!) { gsl_vector_short_set($!vector, $index, $x); self }
+  method ASSIGN-POS(Math::Libgsl::Vector::Int16:D: Int:D $index! where * < $!vector.size, Num(Cool) $x!) {
+    gsl_vector_short_set(self.vector, $index, $x)
+  }
   method setall(Num(Cool) $x!) { gsl_vector_short_set_all($!vector, $x); self }
   method zero() { gsl_vector_short_set_zero($!vector); self }
-  method basis(Int:D $index!) {
+  method basis(Int:D $index! where * < $!vector.size) {
     my $ret = gsl_vector_short_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
@@ -974,37 +1028,39 @@ class Int16 {
     self
   }
   # View
-  method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::Int16::View $vv .= new;
+  method subvector(size_t $offset where * < $!vector.size, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Int16::VView $vv .= new;
     Math::Libgsl::Vector::Int16.new: vector => mgsl_vector_short_subvector($vv.view, $!vector, $offset, $n);
   }
-  method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::Int16::View $vv .= new;
+  method subvector-stride(size_t $offset where * < $!vector.size, size_t $stride, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Int16::VView $vv .= new;
     Math::Libgsl::Vector::Int16.new: vector => mgsl_vector_short_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-short-array(@array) is export {
-    my Math::Libgsl::Vector::Int16::View $vv .= new;
+    my Math::Libgsl::Vector::Int16::VView $vv .= new;
     my CArray[int16] $a .= new: @array».Num;
     Math::Libgsl::Vector::Int16.new: vector => mgsl_vector_short_view_array($vv.view, $a, @array.elems);
   }
   sub view-short-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::Int16::View $vv .= new;
+    my Math::Libgsl::Vector::Int16::VView $vv .= new;
     my CArray[int16] $a .= new: @array».Num;
     Math::Libgsl::Vector::Int16.new: vector => mgsl_vector_short_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Int16 $src) {
+  method copy(Math::Libgsl::Vector::Int16 $src where $!vector.size == .vector.size) {
     my $ret = gsl_vector_short_memcpy($!vector, $src.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method swap(Math::Libgsl::Vector::Int16 $w) {
+  method swap(Math::Libgsl::Vector::Int16 $w where $!vector.size == .vector.size) {
     my $ret = gsl_vector_short_swap($!vector, $w.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j) {
+  method swap-elems(Int $i where * < $!vector.size, Int $j where * < $!vector.size) {
     my $ret = gsl_vector_short_swap_elements($!vector, $i, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
     self
@@ -1015,22 +1071,22 @@ class Int16 {
     self
   }
   # Vector operations
-  method add(Math::Libgsl::Vector::Int16 $b) {
+  method add(Math::Libgsl::Vector::Int16 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_short_add($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method sub(Math::Libgsl::Vector::Int16 $b) {
+  method sub(Math::Libgsl::Vector::Int16 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_short_sub($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method mul(Math::Libgsl::Vector::Int16 $b) {
+  method mul(Math::Libgsl::Vector::Int16 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_short_mul($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method div(Math::Libgsl::Vector::Int16 $b) {
+  method div(Math::Libgsl::Vector::Int16 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_short_div($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
     self
@@ -1071,7 +1127,7 @@ class Int16 {
 }
 
 class UInt16 {
-  class View {
+  class VView {
     has gsl_vector_ushort_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_ushort_view }
     submethod DESTROY { free_gsl_vector_ushort_view($!view) }
@@ -1092,14 +1148,20 @@ class UInt16 {
     gsl_vector_ushort_free($!vector);
   }
   # Accessors
-  method get(Int:D $index! --> Num) { gsl_vector_ushort_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::UInt16:D: Int:D $index! --> Num) { gsl_vector_ushort_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::UInt16:D: Range:D $range! --> List) { gsl_vector_ushort_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_ushort_set($!vector, $index, $x); self }
-  method ASSIGN-POS(Math::Libgsl::Vector::UInt16:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_ushort_set(self.vector, $index, $x) }
+  method get(Int:D $index! where * < $!vector.size --> Num) { gsl_vector_ushort_get($!vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::UInt16:D: Int:D $index! where * < $!vector.size --> Num) {
+    gsl_vector_ushort_get(self.vector, $index)
+  }
+  multi method AT-POS(Math::Libgsl::Vector::UInt16:D: Range:D $range! where { .max < $!vector.size && .min ≥ 0 } --> List) {
+    gsl_vector_ushort_get(self.vector, $_) for $range
+  }
+  method set(Int:D $index! where * < $!vector.size, Num(Cool) $x!) { gsl_vector_ushort_set($!vector, $index, $x); self }
+  method ASSIGN-POS(Math::Libgsl::Vector::UInt16:D: Int:D $index! where * < $!vector.size, Num(Cool) $x!) {
+    gsl_vector_ushort_set(self.vector, $index, $x)
+  }
   method setall(Num(Cool) $x!) { gsl_vector_ushort_set_all($!vector, $x); self }
   method zero() { gsl_vector_ushort_set_zero($!vector); self }
-  method basis(Int:D $index!) {
+  method basis(Int:D $index! where * < $!vector.size) {
     my $ret = gsl_vector_ushort_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
@@ -1126,37 +1188,39 @@ class UInt16 {
     self
   }
   # View
-  method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::UInt16::View $vv .= new;
+  method subvector(size_t $offset where * < $!vector.size, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::UInt16::VView $vv .= new;
     Math::Libgsl::Vector::UInt16.new: vector => mgsl_vector_ushort_subvector($vv.view, $!vector, $offset, $n);
   }
-  method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::UInt16::View $vv .= new;
+  method subvector-stride(size_t $offset where * < $!vector.size, size_t $stride, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::UInt16::VView $vv .= new;
     Math::Libgsl::Vector::UInt16.new: vector => mgsl_vector_ushort_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-ushort-array(@array) is export {
-    my Math::Libgsl::Vector::UInt16::View $vv .= new;
+    my Math::Libgsl::Vector::UInt16::VView $vv .= new;
     my CArray[uint16] $a .= new: @array».Num;
     Math::Libgsl::Vector::UInt16.new: vector => mgsl_vector_ushort_view_array($vv.view, $a, @array.elems);
   }
   sub view-ushort-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::UInt16::View $vv .= new;
+    my Math::Libgsl::Vector::UInt16::VView $vv .= new;
     my CArray[uint16] $a .= new: @array».Num;
     Math::Libgsl::Vector::UInt16.new: vector => mgsl_vector_ushort_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::UInt16 $src) {
+  method copy(Math::Libgsl::Vector::UInt16 $src where $!vector.size == .vector.size) {
     my $ret = gsl_vector_ushort_memcpy($!vector, $src.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method swap(Math::Libgsl::Vector::UInt16 $w) {
+  method swap(Math::Libgsl::Vector::UInt16 $w where $!vector.size == .vector.size) {
     my $ret = gsl_vector_ushort_swap($!vector, $w.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j) {
+  method swap-elems(Int $i where * < $!vector.size, Int $j where * < $!vector.size) {
     my $ret = gsl_vector_ushort_swap_elements($!vector, $i, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
     self
@@ -1167,22 +1231,22 @@ class UInt16 {
     self
   }
   # Vector operations
-  method add(Math::Libgsl::Vector::UInt16 $b) {
+  method add(Math::Libgsl::Vector::UInt16 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_ushort_add($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method sub(Math::Libgsl::Vector::UInt16 $b) {
+  method sub(Math::Libgsl::Vector::UInt16 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_ushort_sub($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method mul(Math::Libgsl::Vector::UInt16 $b) {
+  method mul(Math::Libgsl::Vector::UInt16 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_ushort_mul($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method div(Math::Libgsl::Vector::UInt16 $b) {
+  method div(Math::Libgsl::Vector::UInt16 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_ushort_div($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
     self
@@ -1223,7 +1287,7 @@ class UInt16 {
 }
 
 class Int8 {
-  class View {
+  class VView {
     has gsl_vector_char_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_char_view }
     submethod DESTROY { free_gsl_vector_char_view($!view) }
@@ -1244,14 +1308,20 @@ class Int8 {
     gsl_vector_char_free($!vector);
   }
   # Accessors
-  method get(Int:D $index! --> Num) { gsl_vector_char_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Int8:D: Int:D $index! --> Num) { gsl_vector_char_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::Int8:D: Range:D $range! --> List) { gsl_vector_char_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_char_set($!vector, $index, $x); self }
-  method ASSIGN-POS(Math::Libgsl::Vector::Int8:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_char_set(self.vector, $index, $x) }
+  method get(Int:D $index! where * < $!vector.size --> Num) { gsl_vector_char_get($!vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::Int8:D: Int:D $index! where * < $!vector.size --> Num) {
+    gsl_vector_char_get(self.vector, $index)
+  }
+  multi method AT-POS(Math::Libgsl::Vector::Int8:D: Range:D $range! where { .max < $!vector.size && .min ≥ 0 } --> List) {
+    gsl_vector_char_get(self.vector, $_) for $range
+  }
+  method set(Int:D $index! where * < $!vector.size, Num(Cool) $x!) { gsl_vector_char_set($!vector, $index, $x); self }
+  method ASSIGN-POS(Math::Libgsl::Vector::Int8:D: Int:D $index! where * < $!vector.size, Num(Cool) $x!) {
+    gsl_vector_char_set(self.vector, $index, $x)
+  }
   method setall(Num(Cool) $x!) { gsl_vector_char_set_all($!vector, $x); self }
   method zero() { gsl_vector_char_set_zero($!vector); self }
-  method basis(Int:D $index!) {
+  method basis(Int:D $index! where * < $!vector.size) {
     my $ret = gsl_vector_char_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
@@ -1278,37 +1348,39 @@ class Int8 {
     self
   }
   # View
-  method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::Int8::View $vv .= new;
+  method subvector(size_t $offset where * < $!vector.size, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Int8::VView $vv .= new;
     Math::Libgsl::Vector::Int8.new: vector => mgsl_vector_char_subvector($vv.view, $!vector, $offset, $n);
   }
-  method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::Int8::View $vv .= new;
+  method subvector-stride(size_t $offset where * < $!vector.size, size_t $stride, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Int8::VView $vv .= new;
     Math::Libgsl::Vector::Int8.new: vector => mgsl_vector_char_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-char-array(@array) is export {
-    my Math::Libgsl::Vector::Int8::View $vv .= new;
+    my Math::Libgsl::Vector::Int8::VView $vv .= new;
     my CArray[int8] $a .= new: @array».Num;
     Math::Libgsl::Vector::Int8.new: vector => mgsl_vector_char_view_array($vv.view, $a, @array.elems);
   }
   sub view-char-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::Int8::View $vv .= new;
+    my Math::Libgsl::Vector::Int8::VView $vv .= new;
     my CArray[int8] $a .= new: @array».Num;
     Math::Libgsl::Vector::Int8.new: vector => mgsl_vector_char_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Int8 $src) {
+  method copy(Math::Libgsl::Vector::Int8 $src where $!vector.size == .vector.size) {
     my $ret = gsl_vector_char_memcpy($!vector, $src.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method swap(Math::Libgsl::Vector::Int8 $w) {
+  method swap(Math::Libgsl::Vector::Int8 $w where $!vector.size == .vector.size) {
     my $ret = gsl_vector_char_swap($!vector, $w.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j) {
+  method swap-elems(Int $i where * < $!vector.size, Int $j where * < $!vector.size) {
     my $ret = gsl_vector_char_swap_elements($!vector, $i, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
     self
@@ -1319,22 +1391,22 @@ class Int8 {
     self
   }
   # Vector operations
-  method add(Math::Libgsl::Vector::Int8 $b) {
+  method add(Math::Libgsl::Vector::Int8 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_char_add($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method sub(Math::Libgsl::Vector::Int8 $b) {
+  method sub(Math::Libgsl::Vector::Int8 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_char_sub($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method mul(Math::Libgsl::Vector::Int8 $b) {
+  method mul(Math::Libgsl::Vector::Int8 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_char_mul($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method div(Math::Libgsl::Vector::Int8 $b) {
+  method div(Math::Libgsl::Vector::Int8 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_char_div($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
     self
@@ -1375,7 +1447,7 @@ class Int8 {
 }
 
 class UInt8 {
-  class View {
+  class VView {
     has gsl_vector_uchar_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_uchar_view }
     submethod DESTROY { free_gsl_vector_uchar_view($!view) }
@@ -1396,14 +1468,20 @@ class UInt8 {
     gsl_vector_uchar_free($!vector);
   }
   # Accessors
-  method get(Int:D $index! --> Num) { gsl_vector_uchar_get($!vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::UInt8:D: Int:D $index! --> Num) { gsl_vector_uchar_get(self.vector, $index) }
-  multi method AT-POS(Math::Libgsl::Vector::UInt8:D: Range:D $range! --> List) { gsl_vector_uchar_get(self.vector, $_) for $range }
-  method set(Int:D $index!, Num(Cool) $x!) { gsl_vector_uchar_set($!vector, $index, $x); self }
-  method ASSIGN-POS(Math::Libgsl::Vector::UInt8:D: Int:D $index!, Num(Cool) $x!) { gsl_vector_uchar_set(self.vector, $index, $x) }
+  method get(Int:D $index! where * < $!vector.size --> Num) { gsl_vector_uchar_get($!vector, $index) }
+  multi method AT-POS(Math::Libgsl::Vector::UInt8:D: Int:D $index! where * < $!vector.size --> Num) {
+    gsl_vector_uchar_get(self.vector, $index)
+  }
+  multi method AT-POS(Math::Libgsl::Vector::UInt8:D: Range:D $range! where { .max < $!vector.size && .min ≥ 0 } --> List) {
+    gsl_vector_uchar_get(self.vector, $_) for $range
+  }
+  method set(Int:D $index! where * < $!vector.size, Num(Cool) $x!) { gsl_vector_uchar_set($!vector, $index, $x); self }
+  method ASSIGN-POS(Math::Libgsl::Vector::UInt8:D: Int:D $index! where * < $!vector.size, Num(Cool) $x!) {
+    gsl_vector_uchar_set(self.vector, $index, $x)
+  }
   method setall(Num(Cool) $x!) { gsl_vector_uchar_set_all($!vector, $x); self }
   method zero() { gsl_vector_uchar_set_zero($!vector); self }
-  method basis(Int:D $index!) {
+  method basis(Int:D $index! where * < $!vector.size) {
     my $ret = gsl_vector_uchar_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
@@ -1430,37 +1508,39 @@ class UInt8 {
     self
   }
   # View
-  method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::UInt8::View $vv .= new;
+  method subvector(size_t $offset where * < $!vector.size, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::UInt8::VView $vv .= new;
     Math::Libgsl::Vector::UInt8.new: vector => mgsl_vector_uchar_subvector($vv.view, $!vector, $offset, $n);
   }
-  method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::UInt8::View $vv .= new;
+  method subvector-stride(size_t $offset where * < $!vector.size, size_t $stride, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::UInt8::VView $vv .= new;
     Math::Libgsl::Vector::UInt8.new: vector => mgsl_vector_uchar_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-uchar-array(@array) is export {
-    my Math::Libgsl::Vector::UInt8::View $vv .= new;
+    my Math::Libgsl::Vector::UInt8::VView $vv .= new;
     my CArray[uint8] $a .= new: @array».Num;
     Math::Libgsl::Vector::UInt8.new: vector => mgsl_vector_uchar_view_array($vv.view, $a, @array.elems);
   }
   sub view-uchar-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::UInt8::View $vv .= new;
+    my Math::Libgsl::Vector::UInt8::VView $vv .= new;
     my CArray[uint8] $a .= new: @array».Num;
     Math::Libgsl::Vector::UInt8.new: vector => mgsl_vector_uchar_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::UInt8 $src) {
+  method copy(Math::Libgsl::Vector::UInt8 $src where $!vector.size == .vector.size) {
     my $ret = gsl_vector_uchar_memcpy($!vector, $src.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method swap(Math::Libgsl::Vector::UInt8 $w) {
+  method swap(Math::Libgsl::Vector::UInt8 $w where $!vector.size == .vector.size) {
     my $ret = gsl_vector_uchar_swap($!vector, $w.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j) {
+  method swap-elems(Int $i where * < $!vector.size, Int $j where * < $!vector.size) {
     my $ret = gsl_vector_uchar_swap_elements($!vector, $i, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
     self
@@ -1471,22 +1551,22 @@ class UInt8 {
     self
   }
   # Vector operations
-  method add(Math::Libgsl::Vector::UInt8 $b) {
+  method add(Math::Libgsl::Vector::UInt8 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_uchar_add($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method sub(Math::Libgsl::Vector::UInt8 $b) {
+  method sub(Math::Libgsl::Vector::UInt8 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_uchar_sub($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method mul(Math::Libgsl::Vector::UInt8 $b) {
+  method mul(Math::Libgsl::Vector::UInt8 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_uchar_mul($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method div(Math::Libgsl::Vector::UInt8 $b) {
+  method div(Math::Libgsl::Vector::UInt8 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_uchar_div($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
     self
@@ -1527,7 +1607,7 @@ class UInt8 {
 }
 
 class Complex64 {
-  class View {
+  class VView {
     has gsl_vector_complex_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_complex_view }
     submethod DESTROY { free_gsl_vector_complex_view($!view) }
@@ -1548,21 +1628,21 @@ class Complex64 {
     gsl_vector_complex_free($!vector);
   }
   # Accessors
-  method get(Int:D $index! --> Complex) {
+  method get(Int:D $index! where * < $!vector.size --> Complex) {
     my gsl_complex $c = alloc_gsl_complex;
     mgsl_vector_complex_get($!vector, $index, $c);
     my Complex $nc = $c.dat[0] + i * $c.dat[1];
     free_gsl_complex($c);
     $nc;
   }
-  multi method AT-POS(Math::Libgsl::Vector::Complex64:D: Int:D $index! --> Complex) {
+  multi method AT-POS(Math::Libgsl::Vector::Complex64:D: Int:D $index! where * < $!vector.size --> Complex) {
     my $c = alloc_gsl_complex;
     mgsl_vector_complex_get($!vector, $index, $c);
     my Complex $nc = $c.dat[0] + i * $c.dat[1];
     free_gsl_complex($c);
     $nc;
   }
-  multi method AT-POS(Math::Libgsl::Vector::Complex64:D: Range:D $range! --> List) {
+  multi method AT-POS(Math::Libgsl::Vector::Complex64:D: Range:D $range! where { .max < $!vector.size && .min ≥ 0 } --> List) {
     my Complex @cv;
     for $range {
       my $c = alloc_gsl_complex;
@@ -1573,14 +1653,14 @@ class Complex64 {
     }
     @cv;
   }
-  method set(Int:D $index!, Complex $x!) {
+  method set(Int:D $index! where * < $!vector.size, Complex $x!) {
     my $c = alloc_gsl_complex;
     mgsl_complex_rect($x.re, $x.im, $c);
     mgsl_vector_complex_set($!vector, $index, $c);
     free_gsl_complex($c);
     self
   }
-  method ASSIGN-POS(Math::Libgsl::Vector::Complex64:D: Int:D $index!, Num(Cool) $x!) {
+  method ASSIGN-POS(Math::Libgsl::Vector::Complex64:D: Int:D $index! where * < $!vector.size, Num(Cool) $x!) {
     my $c = alloc_gsl_complex;
     mgsl_complex_rect($x.re, $x.im, $c);
     mgsl_vector_complex_set($!vector, $index, $c);
@@ -1594,7 +1674,7 @@ class Complex64 {
     self
   }
   method zero() { gsl_vector_complex_set_zero($!vector); self }
-  method basis(Int:D $index!) {
+  method basis(Int:D $index! where * < $!vector.size) {
     my $ret = gsl_vector_complex_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
@@ -1621,45 +1701,47 @@ class Complex64 {
     self
   }
   # View
-  method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::Complex64::View $vv .= new;
+  method subvector(size_t $offset where * < $!vector.size, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Complex64::VView $vv .= new;
     Math::Libgsl::Vector::Complex64.new: vector => mgsl_vector_complex_subvector($vv.view, $!vector, $offset, $n);
   }
-  method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::Complex64::View $vv .= new;
+  method subvector-stride(size_t $offset where * < $!vector.size, size_t $stride, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Complex64::VView $vv .= new;
     Math::Libgsl::Vector::Complex64.new: vector => mgsl_vector_complex_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-complex64-array(@array) is export {
-    my Math::Libgsl::Vector::Complex64::View $vv .= new;
+    my Math::Libgsl::Vector::Complex64::VView $vv .= new;
     my CArray[num64] $a .= new: @array».Num;
     Math::Libgsl::Vector::Complex64.new: vector => mgsl_vector_complex_view_array($vv.view, $a, @array.elems);
   }
   sub view-complex64-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::Complex64::View $vv .= new;
+    my Math::Libgsl::Vector::Complex64::VView $vv .= new;
     my CArray[num64] $a .= new: @array».Num;
     Math::Libgsl::Vector::Complex64.new: vector => mgsl_vector_complex_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   method complex64-real() {
-    my Math::Libgsl::Vector::View $vv .= new;
+    my Math::Libgsl::Vector::VView $vv .= new;
     Math::Libgsl::Vector.new: vector => mgsl_vector_complex_real($vv.view, $!vector);
   }
   method complex64-imag() {
-    my Math::Libgsl::Vector::View $vv .= new;
+    my Math::Libgsl::Vector::VView $vv .= new;
     Math::Libgsl::Vector.new: vector => mgsl_vector_complex_imag($vv.view, $!vector);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Complex64 $src) {
+  method copy(Math::Libgsl::Vector::Complex64 $src where $!vector.size == .vector.size) {
     my $ret = gsl_vector_complex_memcpy($!vector, $src.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method swap(Math::Libgsl::Vector::Complex64 $w) {
+  method swap(Math::Libgsl::Vector::Complex64 $w where $!vector.size == .vector.size) {
     my $ret = gsl_vector_complex_swap($!vector, $w.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j) {
+  method swap-elems(Int $i where * < $!vector.size, Int $j where * < $!vector.size) {
     my $ret = gsl_vector_complex_swap_elements($!vector, $i, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
     self
@@ -1670,22 +1752,22 @@ class Complex64 {
     self
   }
   # Vector operations
-  method add(Math::Libgsl::Vector::Complex64 $b) {
+  method add(Math::Libgsl::Vector::Complex64 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_complex_add($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method sub(Math::Libgsl::Vector::Complex64 $b) {
+  method sub(Math::Libgsl::Vector::Complex64 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_complex_sub($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method mul(Math::Libgsl::Vector::Complex64 $b) {
+  method mul(Math::Libgsl::Vector::Complex64 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_complex_mul($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method div(Math::Libgsl::Vector::Complex64 $b) {
+  method div(Math::Libgsl::Vector::Complex64 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_complex_div($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
     self
@@ -1715,7 +1797,7 @@ class Complex64 {
 }
 
 class Complex32 {
-  class View {
+  class VView {
     has gsl_vector_complex_float_view $.view;
     submethod BUILD { $!view = alloc_gsl_vector_complex_float_view }
     submethod DESTROY { free_gsl_vector_complex_float_view($!view) }
@@ -1736,21 +1818,21 @@ class Complex32 {
     gsl_vector_complex_float_free($!vector);
   }
   # Accessors
-  method get(Int:D $index! --> Complex) {
+  method get(Int:D $index! where * < $!vector.size --> Complex) {
     my gsl_complex_float $c = alloc_gsl_complex_float;
     mgsl_vector_complex_float_get($!vector, $index, $c);
     my Complex $nc = $c.dat[0] + i * $c.dat[1];
     free_gsl_complex_float($c);
     $nc;
   }
-  multi method AT-POS(Math::Libgsl::Vector::Complex32:D: Int:D $index! --> Complex) {
+  multi method AT-POS(Math::Libgsl::Vector::Complex32:D: Int:D $index! where * < $!vector.size --> Complex) {
     my gsl_complex_float $c = alloc_gsl_complex_float;
     mgsl_vector_complex_float_get($!vector, $index, $c);
     my Complex $nc = $c.dat[0] + i * $c.dat[1];
     free_gsl_complex_float($c);
     $nc;
   }
-  multi method AT-POS(Math::Libgsl::Vector::Complex32:D: Range:D $range! --> List) {
+  multi method AT-POS(Math::Libgsl::Vector::Complex32:D: Range:D $range! where { .max < $!vector.size && .min ≥ 0 } --> List) {
     my Complex @cv;
     for $range {
       my $c = alloc_gsl_complex_float;
@@ -1761,20 +1843,20 @@ class Complex32 {
     }
     @cv;
   }
-  method set(Int:D $index!, Num(Cool) $x!) {
+  method set(Int:D $index! where * < $!vector.size, Num(Cool) $x!) {
     my $c = alloc_gsl_complex_float;
     mgsl_complex_rect($x.re, $x.im, $c);
     mgsl_vector_complex_float_set($!vector, $index, $c);
     free_gsl_complex_float($c);
     self
   }
-  method ASSIGN-POS(Math::Libgsl::Vector::Complex32:D: Int:D $index!, Num(Cool) $x!) {
+  method ASSIGN-POS(Math::Libgsl::Vector::Complex32:D: Int:D $index! where * < $!vector.size, Num(Cool) $x!) {
     my $c = alloc_gsl_complex_float;
     mgsl_complex_rect($x.re, $x.im, $c);
     mgsl_vector_complex_float_set($!vector, $index, $c);
     free_gsl_complex_float($c);
   }
-  method setall(Num(Cool) $x!) {
+  method setall(Complex(Cool) $x!) {
     my $c = alloc_gsl_complex_float;
     #mgsl_complex_float_rect($x.re, $x.im, $c); # doesn't exist!
     $c.dat[0] = $x.re;
@@ -1784,7 +1866,7 @@ class Complex32 {
     self
   }
   method zero() { gsl_vector_complex_float_set_zero($!vector); self }
-  method basis(Int:D $index!) {
+  method basis(Int:D $index! where * < $!vector.size) {
     my $ret = gsl_vector_complex_float_set_basis($!vector, $index);
     fail X::Libgsl.new: errno => $ret, error => "Can't make a basis vector" if $ret ≠ GSL_SUCCESS;
     self
@@ -1811,45 +1893,47 @@ class Complex32 {
     self
   }
   # View
-  method subvector(size_t $offset, size_t $n) {
-    my Math::Libgsl::Vector::Complex32::View $vv .= new;
+  method subvector(size_t $offset where * < $!vector.size, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Complex32::VView $vv .= new;
     Math::Libgsl::Vector::Complex32.new: vector => mgsl_vector_complex_float_subvector($vv.view, $!vector, $offset, $n);
   }
-  method subvector-stride(size_t $offset, size_t $stride, size_t $n) {
-    my Math::Libgsl::Vector::Complex32::View $vv .= new;
+  method subvector-stride(size_t $offset where * < $!vector.size, size_t $stride, size_t $n) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Subvector index out of bound" if $offset + $n > $!vector.size;
+    my Math::Libgsl::Vector::Complex32::VView $vv .= new;
     Math::Libgsl::Vector::Complex32.new: vector => mgsl_vector_complex_float_subvector_with_stride($vv.view, $!vector, $offset, $stride, $n);
   }
   sub view-complex32-array(@array) is export {
-    my Math::Libgsl::Vector::Complex32::View $vv .= new;
+    my Math::Libgsl::Vector::Complex32::VView $vv .= new;
     my CArray[num32] $a .= new: @array».Num;
     Math::Libgsl::Vector::Complex32.new: vector => mgsl_vector_complex_float_view_array($vv.view, $a, @array.elems);
   }
   sub view-complex32-array-stride(@array, size_t $stride) is export {
-    my Math::Libgsl::Vector::Complex32::View $vv .= new;
+    my Math::Libgsl::Vector::Complex32::VView $vv .= new;
     my CArray[num32] $a .= new: @array».Num;
     Math::Libgsl::Vector::Complex32.new: vector => mgsl_vector_complex_float_view_array_with_stride($vv.view, $a, $stride, @array.elems);
   }
   method complex32-real() {
-    my Math::Libgsl::Vector::Num32::View $vv .= new;
+    my Math::Libgsl::Vector::Num32::VView $vv .= new;
     Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_complex_float_real($vv.view, $!vector);
   }
   method complex32-imag() {
-    my Math::Libgsl::Vector::Num32::View $vv .= new;
+    my Math::Libgsl::Vector::Num32::VView $vv .= new;
     Math::Libgsl::Vector::Num32.new: vector => mgsl_vector_complex_float_imag($vv.view, $!vector);
   }
   # Copy
-  method copy(Math::Libgsl::Vector::Complex32 $src) {
+  method copy(Math::Libgsl::Vector::Complex32 $src where $!vector.size == .vector.size) {
     my $ret = gsl_vector_complex_float_memcpy($!vector, $src.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't copy the vector" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method swap(Math::Libgsl::Vector::Complex32 $w) {
+  method swap(Math::Libgsl::Vector::Complex32 $w where $!vector.size == .vector.size) {
     my $ret = gsl_vector_complex_float_swap($!vector, $w.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
   # Exchanging elements
-  method swap-elems(Int $i, Int $j) {
+  method swap-elems(Int $i where * < $!vector.size, Int $j where * < $!vector.size) {
     my $ret = gsl_vector_complex_float_swap_elements($!vector, $i, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't swap elements" if $ret ≠ GSL_SUCCESS;
     self
@@ -1860,22 +1944,22 @@ class Complex32 {
     self
   }
   # Vector operations
-  method add(Math::Libgsl::Vector::Complex32 $b) {
+  method add(Math::Libgsl::Vector::Complex32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_complex_float_add($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't add two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method sub(Math::Libgsl::Vector::Complex32 $b) {
+  method sub(Math::Libgsl::Vector::Complex32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_complex_float_sub($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't sub two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method mul(Math::Libgsl::Vector::Complex32 $b) {
+  method mul(Math::Libgsl::Vector::Complex32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_complex_float_mul($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't mul two vectors" if $ret ≠ GSL_SUCCESS;
     self
   }
-  method div(Math::Libgsl::Vector::Complex32 $b) {
+  method div(Math::Libgsl::Vector::Complex32 $b where $!vector.size == .vector.size) {
     my $ret = gsl_vector_complex_float_div($!vector, $b.vector);
     fail X::Libgsl.new: errno => $ret, error => "Can't div two vectors" if $ret ≠ GSL_SUCCESS;
     self
