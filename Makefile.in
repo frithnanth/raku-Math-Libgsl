@@ -6,7 +6,7 @@ lib : resources/libraries/%LIB-NAME%
 
 # 'all', with compilation warnings
 debug :
-	%MAKE% "DBG=-Wall"  all
+	%MAKE% "DBG=-Wall -g"  all
 
 resources/libraries/%LIB-NAME% : $(SRC)/complex%O% $(SRC)/polynomial%O% $(SRC)/matrix%O% $(SRC)/permutation%O%
 	%LD% %LDSHARED% %LDFLAGS% %LDOUT%resources/libraries/%LIB-NAME% \
