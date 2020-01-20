@@ -874,13 +874,16 @@ int mgsl_vector_complex_float_fscanf(const char *filename, gsl_vector_complex_fl
 /* Vector view */
 gsl_vector_view *alloc_gsl_vector_view(void)
 {
-  gsl_vector_view *c = malloc(sizeof(gsl_vector_view));
+  gsl_vector_view *c = calloc(1, sizeof(gsl_vector_view));
   return c;
 }
 
 void free_gsl_vector_view(gsl_vector_view *c)
 {
-  free(c);
+  if(c != NULL){
+    free(c);
+    c = NULL;
+  }
 }
 
 gsl_vector *mgsl_vector_subvector(gsl_vector_view *view, gsl_vector *v, size_t offset, size_t n)
@@ -933,13 +936,16 @@ gsl_vector *mgsl_vector_view_array_with_stride(gsl_vector_view *view, double *ba
 
 gsl_vector_float_view *alloc_gsl_vector_float_view(void)
 {
-  gsl_vector_float_view *c = malloc(sizeof(gsl_vector_float_view));
+  gsl_vector_float_view *c = calloc(1, sizeof(gsl_vector_float_view));
   return c;
 }
 
 void free_gsl_vector_float_view(gsl_vector_float_view *c)
 {
-  free(c);
+  if(c != NULL){
+    free(c);
+    c = NULL;
+  }
 }
 
 gsl_vector_float *mgsl_vector_float_subvector(gsl_vector_float_view *view, gsl_vector_float *v, size_t offset, size_t n)
@@ -968,13 +974,16 @@ gsl_vector_float *mgsl_vector_float_view_array_with_stride(gsl_vector_float_view
 
 gsl_vector_int_view *alloc_gsl_vector_int_view(void)
 {
-  gsl_vector_int_view *c = malloc(sizeof(gsl_vector_int_view));
+  gsl_vector_int_view *c = calloc(1, sizeof(gsl_vector_int_view));
   return c;
 }
 
 void free_gsl_vector_int_view(gsl_vector_int_view *c)
 {
-  free(c);
+  if(c != NULL){
+    free(c);
+    c = NULL;
+  }
 }
 
 gsl_vector_int *mgsl_vector_int_subvector(gsl_vector_int_view *view, gsl_vector_int *v, size_t offset, size_t n)
@@ -1003,13 +1012,16 @@ gsl_vector_int *mgsl_vector_int_view_array_with_stride(gsl_vector_int_view *view
 
 gsl_vector_uint_view *alloc_gsl_vector_uint_view(void)
 {
-  gsl_vector_uint_view *c = malloc(sizeof(gsl_vector_uint_view));
+  gsl_vector_uint_view *c = calloc(1, sizeof(gsl_vector_uint_view));
   return c;
 }
 
 void free_gsl_vector_uint_view(gsl_vector_uint_view *c)
 {
-  free(c);
+  if(c != NULL){
+    free(c);
+    c = NULL;
+  }
 }
 
 gsl_vector_uint *mgsl_vector_uint_subvector(gsl_vector_uint_view *view, gsl_vector_uint *v, size_t offset, size_t n)
@@ -1038,13 +1050,16 @@ gsl_vector_uint *mgsl_vector_uint_view_array_with_stride(gsl_vector_uint_view *v
 
 gsl_vector_long_view *alloc_gsl_vector_long_view(void)
 {
-  gsl_vector_long_view *c = malloc(sizeof(gsl_vector_long_view));
+  gsl_vector_long_view *c = calloc(1, sizeof(gsl_vector_long_view));
   return c;
 }
 
 void free_gsl_vector_long_view(gsl_vector_long_view *c)
 {
-  free(c);
+  if(c != NULL){
+    free(c);
+    c = NULL;
+  }
 }
 
 gsl_vector_long *mgsl_vector_long_subvector(gsl_vector_long_view *view, gsl_vector_long *v, size_t offset, size_t n)
@@ -1073,13 +1088,16 @@ gsl_vector_long *mgsl_vector_long_view_array_with_stride(gsl_vector_long_view *v
 
 gsl_vector_ulong_view *alloc_gsl_vector_ulong_view(void)
 {
-  gsl_vector_ulong_view *c = malloc(sizeof(gsl_vector_ulong_view));
+  gsl_vector_ulong_view *c = calloc(1, sizeof(gsl_vector_ulong_view));
   return c;
 }
 
 void free_gsl_vector_ulong_view(gsl_vector_ulong_view *c)
 {
-  free(c);
+  if(c != NULL){
+    free(c);
+    c = NULL;
+  }
 }
 
 gsl_vector_ulong *mgsl_vector_ulong_subvector(gsl_vector_ulong_view *view, gsl_vector_ulong *v, size_t offset, size_t n)
@@ -1108,13 +1126,16 @@ gsl_vector_ulong *mgsl_vector_ulong_view_array_with_stride(gsl_vector_ulong_view
 
 gsl_vector_short_view *alloc_gsl_vector_short_view(void)
 {
-  gsl_vector_short_view *c = malloc(sizeof(gsl_vector_short_view));
+  gsl_vector_short_view *c = calloc(1, sizeof(gsl_vector_short_view));
   return c;
 }
 
 void free_gsl_vector_short_view(gsl_vector_short_view *c)
 {
-  free(c);
+  if(c != NULL){
+    free(c);
+    c = NULL;
+  }
 }
 
 gsl_vector_short *mgsl_vector_short_subvector(gsl_vector_short_view *view, gsl_vector_short *v, size_t offset, size_t n)
@@ -1143,13 +1164,16 @@ gsl_vector_short *mgsl_vector_short_view_array_with_stride(gsl_vector_short_view
 
 gsl_vector_ushort_view *alloc_gsl_vector_ushort_view(void)
 {
-  gsl_vector_ushort_view *c = malloc(sizeof(gsl_vector_ushort_view));
+  gsl_vector_ushort_view *c = calloc(1, sizeof(gsl_vector_ushort_view));
   return c;
 }
 
 void free_gsl_vector_ushort_view(gsl_vector_ushort_view *c)
 {
-  free(c);
+  if(c != NULL){
+    free(c);
+    c = NULL;
+  }
 }
 
 gsl_vector_ushort *mgsl_vector_ushort_subvector(gsl_vector_ushort_view *view, gsl_vector_ushort *v, size_t offset, size_t n)
@@ -1178,13 +1202,16 @@ gsl_vector_ushort *mgsl_vector_ushort_view_array_with_stride(gsl_vector_ushort_v
 
 gsl_vector_char_view *alloc_gsl_vector_char_view(void)
 {
-  gsl_vector_char_view *c = malloc(sizeof(gsl_vector_char_view));
+  gsl_vector_char_view *c = calloc(1, sizeof(gsl_vector_char_view));
   return c;
 }
 
 void free_gsl_vector_char_view(gsl_vector_char_view *c)
 {
-  free(c);
+  if(c != NULL){
+    free(c);
+    c = NULL;
+  }
 }
 
 gsl_vector_char *mgsl_vector_char_subvector(gsl_vector_char_view *view, gsl_vector_char *v, size_t offset, size_t n)
@@ -1213,13 +1240,16 @@ gsl_vector_char *mgsl_vector_char_view_array_with_stride(gsl_vector_char_view *v
 
 gsl_vector_uchar_view *alloc_gsl_vector_uchar_view(void)
 {
-  gsl_vector_uchar_view *c = malloc(sizeof(gsl_vector_uchar_view));
+  gsl_vector_uchar_view *c = calloc(1, sizeof(gsl_vector_uchar_view));
   return c;
 }
 
 void free_gsl_vector_uchar_view(gsl_vector_uchar_view *c)
 {
-  free(c);
+  if(c != NULL){
+    free(c);
+    c = NULL;
+  }
 }
 
 gsl_vector_uchar *mgsl_vector_uchar_subvector(gsl_vector_uchar_view *view, gsl_vector_uchar *v, size_t offset, size_t n)
@@ -1248,13 +1278,16 @@ gsl_vector_uchar *mgsl_vector_uchar_view_array_with_stride(gsl_vector_uchar_view
 
 gsl_vector_complex_view *alloc_gsl_vector_complex_view(void)
 {
-  gsl_vector_complex_view *c = malloc(sizeof(gsl_vector_complex_view));
+  gsl_vector_complex_view *c = calloc(1, sizeof(gsl_vector_complex_view));
   return c;
 }
 
 void free_gsl_vector_complex_view(gsl_vector_complex_view *c)
 {
-  free(c);
+  if(c != NULL){
+    free(c);
+    c = NULL;
+  }
 }
 
 gsl_vector_complex *mgsl_vector_complex_subvector(gsl_vector_complex_view *view, gsl_vector_complex *v, size_t offset, size_t n)
@@ -1283,13 +1316,16 @@ gsl_vector_complex *mgsl_vector_complex_view_array_with_stride(gsl_vector_comple
 
 gsl_vector_complex_float_view *alloc_gsl_vector_complex_float_view(void)
 {
-  gsl_vector_complex_float_view *c = malloc(sizeof(gsl_vector_complex_float_view));
+  gsl_vector_complex_float_view *c = calloc(1, sizeof(gsl_vector_complex_float_view));
   return c;
 }
 
 void free_gsl_vector_complex_float_view(gsl_vector_complex_float_view *c)
 {
-  free(c);
+  if(c != NULL){
+    free(c);
+    c = NULL;
+  }
 }
 
 gsl_vector_complex_float *mgsl_vector_complex_float_subvector(gsl_vector_complex_float_view *view, gsl_vector_complex_float *v, size_t offset, size_t n)
@@ -1833,13 +1869,16 @@ int mgsl_matrix_complex_float_fscanf(const char *filename, gsl_matrix_complex_fl
 /* Matrix view */
 gsl_matrix_view *alloc_gsl_matrix_view(void)
 {
-  gsl_matrix_view *m = malloc(sizeof(gsl_matrix_view));
+  gsl_matrix_view *m = calloc(1, sizeof(gsl_matrix_view));
   return m;
 }
 
 void free_gsl_matrix_view(gsl_matrix_view *m)
 {
-  free(m);
+  if(m != NULL){
+    free(m);
+    m = NULL;
+  }
 }
 
 gsl_matrix *mgsl_matrix_submatrix(gsl_matrix_view *view, gsl_matrix *m, size_t k1, size_t k2, size_t n1, size_t n2)
@@ -1874,13 +1913,16 @@ gsl_matrix *mgsl_matrix_view_vector_with_tda(gsl_matrix_view *view, gsl_vector *
 
 gsl_matrix_float_view *alloc_gsl_matrix_float_view(void)
 {
-  gsl_matrix_float_view *m = malloc(sizeof(gsl_matrix_float_view));
+  gsl_matrix_float_view *m = calloc(1, sizeof(gsl_matrix_float_view));
   return m;
 }
 
 void free_gsl_matrix_float_view(gsl_matrix_float_view *m)
 {
-  free(m);
+  if(m != NULL){
+    free(m);
+    m = NULL;
+  }
 }
 
 gsl_matrix_float *mgsl_matrix_float_submatrix(gsl_matrix_float_view *view, gsl_matrix_float *m, size_t k1, size_t k2, size_t n1, size_t n2)
@@ -1915,13 +1957,16 @@ gsl_matrix_float *mgsl_matrix_float_view_vector_with_tda(gsl_matrix_float_view *
 
 gsl_matrix_int_view *alloc_gsl_matrix_int_view(void)
 {
-  gsl_matrix_int_view *m = malloc(sizeof(gsl_matrix_int_view));
+  gsl_matrix_int_view *m = calloc(1, sizeof(gsl_matrix_int_view));
   return m;
 }
 
 void free_gsl_matrix_int_view(gsl_matrix_int_view *m)
 {
-  free(m);
+  if(m != NULL){
+    free(m);
+    m = NULL;
+  }
 }
 
 gsl_matrix_int *mgsl_matrix_int_submatrix(gsl_matrix_int_view *view, gsl_matrix_int *m, size_t k1, size_t k2, size_t n1, size_t n2)
@@ -1956,13 +2001,16 @@ gsl_matrix_int *mgsl_matrix_int_view_vector_with_tda(gsl_matrix_int_view *view, 
 
 gsl_matrix_uint_view *alloc_gsl_matrix_uint_view(void)
 {
-  gsl_matrix_uint_view *m = malloc(sizeof(gsl_matrix_uint_view));
+  gsl_matrix_uint_view *m = calloc(1, sizeof(gsl_matrix_uint_view));
   return m;
 }
 
 void free_gsl_matrix_uint_view(gsl_matrix_uint_view *m)
 {
-  free(m);
+  if(m != NULL){
+    free(m);
+    m = NULL;
+  }
 }
 
 gsl_matrix_uint *mgsl_matrix_uint_submatrix(gsl_matrix_uint_view *view, gsl_matrix_uint *m, size_t k1, size_t k2, size_t n1, size_t n2)
@@ -1997,13 +2045,16 @@ gsl_matrix_uint *mgsl_matrix_uint_view_vector_with_tda(gsl_matrix_uint_view *vie
 
 gsl_matrix_long_view *alloc_gsl_matrix_long_view(void)
 {
-  gsl_matrix_long_view *m = malloc(sizeof(gsl_matrix_long_view));
+  gsl_matrix_long_view *m = calloc(1, sizeof(gsl_matrix_long_view));
   return m;
 }
 
 void free_gsl_matrix_long_view(gsl_matrix_long_view *m)
 {
-  free(m);
+  if(m != NULL){
+    free(m);
+    m = NULL;
+  }
 }
 
 gsl_matrix_long *mgsl_matrix_long_submatrix(gsl_matrix_long_view *view, gsl_matrix_long *m, size_t k1, size_t k2, size_t n1, size_t n2)
@@ -2038,13 +2089,16 @@ gsl_matrix_long *mgsl_matrix_long_view_vector_with_tda(gsl_matrix_long_view *vie
 
 gsl_matrix_ulong_view *alloc_gsl_matrix_ulong_view(void)
 {
-  gsl_matrix_ulong_view *m = malloc(sizeof(gsl_matrix_ulong_view));
+  gsl_matrix_ulong_view *m = calloc(1, sizeof(gsl_matrix_ulong_view));
   return m;
 }
 
 void free_gsl_matrix_ulong_view(gsl_matrix_ulong_view *m)
 {
-  free(m);
+  if(m != NULL){
+    free(m);
+    m = NULL;
+  }
 }
 
 gsl_matrix_ulong *mgsl_matrix_ulong_submatrix(gsl_matrix_ulong_view *view, gsl_matrix_ulong *m, size_t k1, size_t k2, size_t n1, size_t n2)
@@ -2079,13 +2133,16 @@ gsl_matrix_ulong *mgsl_matrix_ulong_view_vector_with_tda(gsl_matrix_ulong_view *
 
 gsl_matrix_short_view *alloc_gsl_matrix_short_view(void)
 {
-  gsl_matrix_short_view *m = malloc(sizeof(gsl_matrix_short_view));
+  gsl_matrix_short_view *m = calloc(1, sizeof(gsl_matrix_short_view));
   return m;
 }
 
 void free_gsl_matrix_short_view(gsl_matrix_short_view *m)
 {
-  free(m);
+  if(m != NULL){
+    free(m);
+    m = NULL;
+  }
 }
 
 gsl_matrix_short *mgsl_matrix_short_submatrix(gsl_matrix_short_view *view, gsl_matrix_short *m, size_t k1, size_t k2, size_t n1, size_t n2)
@@ -2120,13 +2177,16 @@ gsl_matrix_short *mgsl_matrix_short_view_vector_with_tda(gsl_matrix_short_view *
 
 gsl_matrix_ushort_view *alloc_gsl_matrix_ushort_view(void)
 {
-  gsl_matrix_ushort_view *m = malloc(sizeof(gsl_matrix_ushort_view));
+  gsl_matrix_ushort_view *m = calloc(1, sizeof(gsl_matrix_ushort_view));
   return m;
 }
 
 void free_gsl_matrix_ushort_view(gsl_matrix_ushort_view *m)
 {
-  free(m);
+  if(m != NULL){
+    free(m);
+    m = NULL;
+  }
 }
 
 gsl_matrix_ushort *mgsl_matrix_ushort_submatrix(gsl_matrix_ushort_view *view, gsl_matrix_ushort *m, size_t k1, size_t k2, size_t n1, size_t n2)
@@ -2161,13 +2221,16 @@ gsl_matrix_ushort *mgsl_matrix_ushort_view_vector_with_tda(gsl_matrix_ushort_vie
 
 gsl_matrix_char_view *alloc_gsl_matrix_char_view(void)
 {
-  gsl_matrix_char_view *m = malloc(sizeof(gsl_matrix_char_view));
+  gsl_matrix_char_view *m = calloc(1, sizeof(gsl_matrix_char_view));
   return m;
 }
 
 void free_gsl_matrix_char_view(gsl_matrix_char_view *m)
 {
-  free(m);
+  if(m != NULL){
+    free(m);
+    m = NULL;
+  }
 }
 
 gsl_matrix_char *mgsl_matrix_char_submatrix(gsl_matrix_char_view *view, gsl_matrix_char *m, size_t k1, size_t k2, size_t n1, size_t n2)
@@ -2202,13 +2265,16 @@ gsl_matrix_char *mgsl_matrix_char_view_vector_with_tda(gsl_matrix_char_view *vie
 
 gsl_matrix_uchar_view *alloc_gsl_matrix_uchar_view(void)
 {
-  gsl_matrix_uchar_view *m = malloc(sizeof(gsl_matrix_uchar_view));
+  gsl_matrix_uchar_view *m = calloc(1, sizeof(gsl_matrix_uchar_view));
   return m;
 }
 
 void free_gsl_matrix_uchar_view(gsl_matrix_uchar_view *m)
 {
-  free(m);
+  if(m != NULL){
+    free(m);
+    m = NULL;
+  }
 }
 
 gsl_matrix_uchar *mgsl_matrix_uchar_submatrix(gsl_matrix_uchar_view *view, gsl_matrix_uchar *m, size_t k1, size_t k2, size_t n1, size_t n2)
@@ -2243,13 +2309,16 @@ gsl_matrix_uchar *mgsl_matrix_uchar_view_vector_with_tda(gsl_matrix_uchar_view *
 
 gsl_matrix_complex_view *alloc_gsl_matrix_complex_view(void)
 {
-  gsl_matrix_complex_view *m = malloc(sizeof(gsl_matrix_complex_view));
+  gsl_matrix_complex_view *m = calloc(1, sizeof(gsl_matrix_complex_view));
   return m;
 }
 
 void free_gsl_matrix_complex_view(gsl_matrix_complex_view *m)
 {
-  free(m);
+  if(m != NULL){
+    free(m);
+    m = NULL;
+  }
 }
 
 gsl_matrix_complex *mgsl_matrix_complex_submatrix(gsl_matrix_complex_view *view, gsl_matrix_complex *m, size_t k1, size_t k2, size_t n1, size_t n2)
@@ -2284,13 +2353,16 @@ gsl_matrix_complex *mgsl_matrix_complex_view_vector_with_tda(gsl_matrix_complex_
 
 gsl_matrix_complex_float_view *alloc_gsl_matrix_complex_float_view(void)
 {
-  gsl_matrix_complex_float_view *m = malloc(sizeof(gsl_matrix_complex_float_view));
+  gsl_matrix_complex_float_view *m = calloc(1, sizeof(gsl_matrix_complex_float_view));
   return m;
 }
 
 void free_gsl_matrix_complex_float_view(gsl_matrix_complex_float_view *m)
 {
-  free(m);
+  if(m != NULL){
+    free(m);
+    m = NULL;
+  }
 }
 
 gsl_matrix_complex_float *mgsl_matrix_complex_float_submatrix(gsl_matrix_complex_float_view *view, gsl_matrix_complex_float *m, size_t k1, size_t k2, size_t n1, size_t n2)
