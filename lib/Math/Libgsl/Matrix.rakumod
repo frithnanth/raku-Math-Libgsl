@@ -133,20 +133,23 @@ method swap(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $
   self
 }
 # Rows and columns
-method get-row(Int:D $i where * < $!matrix.size1 --> Seq) {
+method get-row(Int:D $i where * < $!matrix.size1) {
   my gsl_vector $v = gsl_vector_calloc($!matrix.size2);
+  LEAVE { gsl_vector_free($v) }
   my $ret = gsl_matrix_get_row($v, $!matrix, $i);
   fail X::Libgsl.new: errno => $ret, error => "Can't get row" if $ret ≠ GSL_SUCCESS;
-  gather take gsl_vector_get($v, $_) for ^$!matrix.size2;
+  my @row = gather take gsl_vector_get($v, $_) for ^$!matrix.size2;
 }
-method get-col(Int:D $j where * < $!matrix.size2 --> Seq) {
+method get-col(Int:D $j where * < $!matrix.size2) {
   my gsl_vector $v = gsl_vector_calloc($!matrix.size1);
+  LEAVE { gsl_vector_free($v) }
   my $ret = gsl_matrix_get_col($v, $!matrix, $j);
   fail X::Libgsl.new: errno => $ret, error => "Can't get col" if $ret ≠ GSL_SUCCESS;
-  gather take gsl_vector_get($v, $_) for ^$!matrix.size1;
+  my @col = gather take gsl_vector_get($v, $_) for ^$!matrix.size1;
 }
 multi method set-row(Int:D $i where * ≤ $!matrix.size1, @row where *.elems == $!matrix.size2) {
   my gsl_vector $v = gsl_vector_calloc($!matrix.size2);
+  LEAVE { gsl_vector_free($v) }
   gsl_vector_set($v, $_, @row[$_].Num) for ^$!matrix.size2;
   my $ret = gsl_matrix_set_row($!matrix, $i, $v);
   fail X::Libgsl.new: errno => $ret, error => "Can't set row" if $ret ≠ GSL_SUCCESS;
@@ -159,6 +162,7 @@ multi method set-row(Int:D $i where * ≤ $!matrix.size1, Math::Libgsl::Vector $
 }
 multi method set-col(Int:D $j where * ≤ $!matrix.size2, @col where *.elems == $!matrix.size1) {
   my gsl_vector $v = gsl_vector_calloc($!matrix.size1);
+  LEAVE { gsl_vector_free($v) }
   gsl_vector_set($v, $_, @col[$_].Num) for ^$!matrix.size1;
   my $ret = gsl_matrix_set_col($!matrix, $j, $v);
   fail X::Libgsl.new: errno => $ret, error => "Can't set col" if $ret ≠ GSL_SUCCESS;
@@ -383,20 +387,23 @@ class Num32 {
     self
   }
   # Rows and columns
-  method get-row(Int:D $i where * < $!matrix.size1 --> Seq) {
+  method get-row(Int:D $i where * < $!matrix.size1) {
     my gsl_vector_float $v = gsl_vector_float_calloc($!matrix.size2);
+    LEAVE { gsl_vector_float_free($v) }
     my $ret = gsl_matrix_float_get_row($v, $!matrix, $i);
     fail X::Libgsl.new: errno => $ret, error => "Can't get row" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_float_get($v, $_) for ^$!matrix.size2;
+    my @row = gather take gsl_vector_float_get($v, $_) for ^$!matrix.size2;
   }
-  method get-col(Int:D $j where * < $!matrix.size2 --> Seq) {
+  method get-col(Int:D $j where * < $!matrix.size2) {
     my gsl_vector_float $v = gsl_vector_float_calloc($!matrix.size1);
+    LEAVE { gsl_vector_float_free($v) }
     my $ret = gsl_matrix_float_get_col($v, $!matrix, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't get col" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_float_get($v, $_) for ^$!matrix.size1;
+    my @col = gather take gsl_vector_float_get($v, $_) for ^$!matrix.size1;
   }
   multi method set-row(Int:D $i where * ≤ $!matrix.size1, @row where *.elems == $!matrix.size2) {
     my gsl_vector_float $v = gsl_vector_float_calloc($!matrix.size2);
+    LEAVE { gsl_vector_float_free($v) }
     gsl_vector_float_set($v, $_, @row[$_].Num) for ^$!matrix.size2;
     my $ret = gsl_matrix_float_set_row($!matrix, $i, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set row" if $ret ≠ GSL_SUCCESS;
@@ -409,6 +416,7 @@ class Num32 {
   }
   multi method set-col(Int:D $j where * ≤ $!matrix.size2, @col where *.elems == $!matrix.size1) {
     my gsl_vector_float $v = gsl_vector_float_calloc($!matrix.size1);
+    LEAVE { gsl_vector_float_free($v) }
     gsl_vector_float_set($v, $_, @col[$_].Num) for ^$!matrix.size1;
     my $ret = gsl_matrix_float_set_col($!matrix, $j, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set col" if $ret ≠ GSL_SUCCESS;
@@ -634,20 +642,23 @@ class Int32 {
     self
   }
   # Rows and columns
-  method get-row(Int:D $i where * < $!matrix.size1 --> Seq) {
+  method get-row(Int:D $i where * < $!matrix.size1) {
     my gsl_vector_int $v = gsl_vector_int_calloc($!matrix.size2);
+    LEAVE { gsl_vector_int_free($v) }
     my $ret = gsl_matrix_int_get_row($v, $!matrix, $i);
     fail X::Libgsl.new: errno => $ret, error => "Can't get row" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_int_get($v, $_) for ^$!matrix.size2;
+    my @row = gather take gsl_vector_int_get($v, $_) for ^$!matrix.size2;
   }
-  method get-col(Int:D $j where * < $!matrix.size2 --> Seq) {
+  method get-col(Int:D $j where * < $!matrix.size2) {
     my gsl_vector_int $v = gsl_vector_int_calloc($!matrix.size1);
+    LEAVE { gsl_vector_int_free($v) }
     my $ret = gsl_matrix_int_get_col($v, $!matrix, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't get col" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_int_get($v, $_) for ^$!matrix.size1;
+    my @col = gather take gsl_vector_int_get($v, $_) for ^$!matrix.size1;
   }
   multi method set-row(Int:D $i where * ≤ $!matrix.size1, @row where *.elems == $!matrix.size2) {
     my gsl_vector_int $v = gsl_vector_int_calloc($!matrix.size2);
+    LEAVE { gsl_vector_int_free($v) }
     gsl_vector_int_set($v, $_, @row[$_].Num) for ^$!matrix.size2;
     my $ret = gsl_matrix_int_set_row($!matrix, $i, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set row" if $ret ≠ GSL_SUCCESS;
@@ -660,6 +671,7 @@ class Int32 {
   }
   multi method set-col(Int:D $j where * ≤ $!matrix.size2, @col where *.elems == $!matrix.size1) {
     my gsl_vector_int $v = gsl_vector_int_calloc($!matrix.size1);
+    LEAVE { gsl_vector_int_free($v) }
     gsl_vector_int_set($v, $_, @col[$_].Num) for ^$!matrix.size1;
     my $ret = gsl_matrix_int_set_col($!matrix, $j, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set col" if $ret ≠ GSL_SUCCESS;
@@ -885,20 +897,23 @@ class UInt32 {
     self
   }
   # Rows and columns
-  method get-row(Int:D $i where * < $!matrix.size1 --> Seq) {
+  method get-row(Int:D $i where * < $!matrix.size1) {
     my gsl_vector_uint $v = gsl_vector_uint_calloc($!matrix.size2);
+    LEAVE { gsl_vector_uint_free($v) }
     my $ret = gsl_matrix_uint_get_row($v, $!matrix, $i);
     fail X::Libgsl.new: errno => $ret, error => "Can't get row" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_uint_get($v, $_) for ^$!matrix.size2;
+    my @row = gather take gsl_vector_uint_get($v, $_) for ^$!matrix.size2;
   }
-  method get-col(Int:D $j where * < $!matrix.size2 --> Seq) {
+  method get-col(Int:D $j where * < $!matrix.size2) {
     my gsl_vector_uint $v = gsl_vector_uint_calloc($!matrix.size1);
+    LEAVE { gsl_vector_uint_free($v) }
     my $ret = gsl_matrix_uint_get_col($v, $!matrix, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't get col" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_uint_get($v, $_) for ^$!matrix.size1;
+    my @col = gather take gsl_vector_uint_get($v, $_) for ^$!matrix.size1;
   }
   multi method set-row(Int:D $i where * ≤ $!matrix.size1, @row where *.elems == $!matrix.size2) {
     my gsl_vector_uint $v = gsl_vector_uint_calloc($!matrix.size2);
+    LEAVE { gsl_vector_uint_free($v) }
     gsl_vector_uint_set($v, $_, @row[$_].Num) for ^$!matrix.size2;
     my $ret = gsl_matrix_uint_set_row($!matrix, $i, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set row" if $ret ≠ GSL_SUCCESS;
@@ -911,6 +926,7 @@ class UInt32 {
   }
   multi method set-col(Int:D $j where * ≤ $!matrix.size2, @col where *.elems == $!matrix.size1) {
     my gsl_vector_uint $v = gsl_vector_uint_calloc($!matrix.size1);
+    LEAVE { gsl_vector_uint_free($v) }
     gsl_vector_uint_set($v, $_, @col[$_].Num) for ^$!matrix.size1;
     my $ret = gsl_matrix_uint_set_col($!matrix, $j, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set col" if $ret ≠ GSL_SUCCESS;
@@ -1136,20 +1152,23 @@ class Int64 {
     self
   }
   # Rows and columns
-  method get-row(Int:D $i where * < $!matrix.size1 --> Seq) {
+  method get-row(Int:D $i where * < $!matrix.size1) {
     my gsl_vector_long $v = gsl_vector_long_calloc($!matrix.size2);
+    LEAVE { gsl_vector_long_free($v) }
     my $ret = gsl_matrix_long_get_row($v, $!matrix, $i);
     fail X::Libgsl.new: errno => $ret, error => "Can't get row" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_long_get($v, $_) for ^$!matrix.size2;
+    my @row = gather take gsl_vector_long_get($v, $_) for ^$!matrix.size2;
   }
-  method get-col(Int:D $j where * < $!matrix.size2 --> Seq) {
+  method get-col(Int:D $j where * < $!matrix.size2) {
     my gsl_vector_long $v = gsl_vector_long_calloc($!matrix.size1);
+    LEAVE { gsl_vector_long_free($v) }
     my $ret = gsl_matrix_long_get_col($v, $!matrix, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't get col" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_long_get($v, $_) for ^$!matrix.size1;
+    my @col = gather take gsl_vector_long_get($v, $_) for ^$!matrix.size1;
   }
   multi method set-row(Int:D $i where * ≤ $!matrix.size1, @row where *.elems == $!matrix.size2) {
     my gsl_vector_long $v = gsl_vector_long_calloc($!matrix.size2);
+    LEAVE { gsl_vector_long_free($v) }
     gsl_vector_long_set($v, $_, @row[$_].Num) for ^$!matrix.size2;
     my $ret = gsl_matrix_long_set_row($!matrix, $i, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set row" if $ret ≠ GSL_SUCCESS;
@@ -1162,6 +1181,7 @@ class Int64 {
   }
   multi method set-col(Int:D $j where * ≤ $!matrix.size2, @col where *.elems == $!matrix.size1) {
     my gsl_vector_long $v = gsl_vector_long_calloc($!matrix.size1);
+    LEAVE { gsl_vector_long_free($v) }
     gsl_vector_long_set($v, $_, @col[$_].Num) for ^$!matrix.size1;
     my $ret = gsl_matrix_long_set_col($!matrix, $j, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set col" if $ret ≠ GSL_SUCCESS;
@@ -1387,20 +1407,23 @@ class UInt64 {
     self
   }
   # Rows and columns
-  method get-row(Int:D $i where * < $!matrix.size1 --> Seq) {
+  method get-row(Int:D $i where * < $!matrix.size1) {
     my gsl_vector_ulong $v = gsl_vector_ulong_calloc($!matrix.size2);
+    LEAVE { gsl_vector_ulong_free($v) }
     my $ret = gsl_matrix_ulong_get_row($v, $!matrix, $i);
     fail X::Libgsl.new: errno => $ret, error => "Can't get row" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_ulong_get($v, $_) for ^$!matrix.size2;
+    my @row = gather take gsl_vector_ulong_get($v, $_) for ^$!matrix.size2;
   }
-  method get-col(Int:D $j where * < $!matrix.size2 --> Seq) {
+  method get-col(Int:D $j where * < $!matrix.size2) {
     my gsl_vector_ulong $v = gsl_vector_ulong_calloc($!matrix.size1);
+    LEAVE { gsl_vector_ulong_free($v) }
     my $ret = gsl_matrix_ulong_get_col($v, $!matrix, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't get col" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_ulong_get($v, $_) for ^$!matrix.size1;
+    my @col = gather take gsl_vector_ulong_get($v, $_) for ^$!matrix.size1;
   }
   multi method set-row(Int:D $i where * ≤ $!matrix.size1, @row where *.elems == $!matrix.size2) {
     my gsl_vector_ulong $v = gsl_vector_ulong_calloc($!matrix.size2);
+    LEAVE { gsl_vector_ulong_free($v) }
     gsl_vector_ulong_set($v, $_, @row[$_].Num) for ^$!matrix.size2;
     my $ret = gsl_matrix_ulong_set_row($!matrix, $i, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set row" if $ret ≠ GSL_SUCCESS;
@@ -1413,6 +1436,7 @@ class UInt64 {
   }
   multi method set-col(Int:D $j where * ≤ $!matrix.size2, @col where *.elems == $!matrix.size1) {
     my gsl_vector_ulong $v = gsl_vector_ulong_calloc($!matrix.size1);
+    LEAVE { gsl_vector_ulong_free($v) }
     gsl_vector_ulong_set($v, $_, @col[$_].Num) for ^$!matrix.size1;
     my $ret = gsl_matrix_ulong_set_col($!matrix, $j, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set col" if $ret ≠ GSL_SUCCESS;
@@ -1638,20 +1662,23 @@ class Int16 {
     self
   }
   # Rows and columns
-  method get-row(Int:D $i where * < $!matrix.size1 --> Seq) {
+  method get-row(Int:D $i where * < $!matrix.size1) {
     my gsl_vector_short $v = gsl_vector_short_calloc($!matrix.size2);
+    LEAVE { gsl_vector_short_free($v) }
     my $ret = gsl_matrix_short_get_row($v, $!matrix, $i);
     fail X::Libgsl.new: errno => $ret, error => "Can't get row" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_short_get($v, $_) for ^$!matrix.size2;
+    my @row = gather take gsl_vector_short_get($v, $_) for ^$!matrix.size2;
   }
-  method get-col(Int:D $j where * < $!matrix.size2 --> Seq) {
+  method get-col(Int:D $j where * < $!matrix.size2) {
     my gsl_vector_short $v = gsl_vector_short_calloc($!matrix.size1);
+    LEAVE { gsl_vector_short_free($v) }
     my $ret = gsl_matrix_short_get_col($v, $!matrix, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't get col" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_short_get($v, $_) for ^$!matrix.size1;
+    my @col = gather take gsl_vector_short_get($v, $_) for ^$!matrix.size1;
   }
   multi method set-row(Int:D $i where * ≤ $!matrix.size1, @row where *.elems == $!matrix.size2) {
     my gsl_vector_short $v = gsl_vector_short_calloc($!matrix.size2);
+    LEAVE { gsl_vector_short_free($v) }
     gsl_vector_short_set($v, $_, @row[$_].Num) for ^$!matrix.size2;
     my $ret = gsl_matrix_short_set_row($!matrix, $i, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set row" if $ret ≠ GSL_SUCCESS;
@@ -1664,6 +1691,7 @@ class Int16 {
   }
   multi method set-col(Int:D $j where * ≤ $!matrix.size2, @col where *.elems == $!matrix.size1) {
     my gsl_vector_short $v = gsl_vector_short_calloc($!matrix.size1);
+    LEAVE { gsl_vector_short_free($v) }
     gsl_vector_short_set($v, $_, @col[$_].Num) for ^$!matrix.size1;
     my $ret = gsl_matrix_short_set_col($!matrix, $j, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set col" if $ret ≠ GSL_SUCCESS;
@@ -1889,20 +1917,23 @@ class UInt16 {
     self
   }
   # Rows and columns
-  method get-row(Int:D $i where * < $!matrix.size1 --> Seq) {
+  method get-row(Int:D $i where * < $!matrix.size1) {
     my gsl_vector_ushort $v = gsl_vector_ushort_calloc($!matrix.size2);
+    LEAVE { gsl_vector_ushort_free($v) }
     my $ret = gsl_matrix_ushort_get_row($v, $!matrix, $i);
     fail X::Libgsl.new: errno => $ret, error => "Can't get row" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_ushort_get($v, $_) for ^$!matrix.size2;
+    my @row = gather take gsl_vector_ushort_get($v, $_) for ^$!matrix.size2;
   }
-  method get-col(Int:D $j where * < $!matrix.size2 --> Seq) {
+  method get-col(Int:D $j where * < $!matrix.size2) {
     my gsl_vector_ushort $v = gsl_vector_ushort_calloc($!matrix.size1);
+    LEAVE { gsl_vector_ushort_free($v) }
     my $ret = gsl_matrix_ushort_get_col($v, $!matrix, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't get col" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_ushort_get($v, $_) for ^$!matrix.size1;
+    my @col = gather take gsl_vector_ushort_get($v, $_) for ^$!matrix.size1;
   }
   multi method set-row(Int:D $i where * ≤ $!matrix.size1, @row where *.elems == $!matrix.size2) {
     my gsl_vector_ushort $v = gsl_vector_ushort_calloc($!matrix.size2);
+    LEAVE { gsl_vector_ushort_free($v) }
     gsl_vector_ushort_set($v, $_, @row[$_].Num) for ^$!matrix.size2;
     my $ret = gsl_matrix_ushort_set_row($!matrix, $i, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set row" if $ret ≠ GSL_SUCCESS;
@@ -1915,6 +1946,7 @@ class UInt16 {
   }
   multi method set-col(Int:D $j where * ≤ $!matrix.size2, @col where *.elems == $!matrix.size1) {
     my gsl_vector_ushort $v = gsl_vector_ushort_calloc($!matrix.size1);
+    LEAVE { gsl_vector_ushort_free($v) }
     gsl_vector_ushort_set($v, $_, @col[$_].Num) for ^$!matrix.size1;
     my $ret = gsl_matrix_ushort_set_col($!matrix, $j, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set col" if $ret ≠ GSL_SUCCESS;
@@ -2140,20 +2172,23 @@ class Int8 {
     self
   }
   # Rows and columns
-  method get-row(Int:D $i where * < $!matrix.size1 --> Seq) {
+  method get-row(Int:D $i where * < $!matrix.size1) {
     my gsl_vector_char $v = gsl_vector_char_calloc($!matrix.size2);
+    LEAVE { gsl_vector_char_free($v) }
     my $ret = gsl_matrix_char_get_row($v, $!matrix, $i);
     fail X::Libgsl.new: errno => $ret, error => "Can't get row" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_char_get($v, $_) for ^$!matrix.size2;
+    my @row = gather take gsl_vector_char_get($v, $_) for ^$!matrix.size2;
   }
-  method get-col(Int:D $j where * < $!matrix.size2 --> Seq) {
+  method get-col(Int:D $j where * < $!matrix.size2) {
     my gsl_vector_char $v = gsl_vector_char_calloc($!matrix.size1);
+    LEAVE { gsl_vector_char_free($v) }
     my $ret = gsl_matrix_char_get_col($v, $!matrix, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't get col" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_char_get($v, $_) for ^$!matrix.size1;
+    my @col = gather take gsl_vector_char_get($v, $_) for ^$!matrix.size1;
   }
   multi method set-row(Int:D $i where * ≤ $!matrix.size1, @row where *.elems == $!matrix.size2) {
     my gsl_vector_char $v = gsl_vector_char_calloc($!matrix.size2);
+    LEAVE { gsl_vector_char_free($v) }
     gsl_vector_char_set($v, $_, @row[$_].Num) for ^$!matrix.size2;
     my $ret = gsl_matrix_char_set_row($!matrix, $i, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set row" if $ret ≠ GSL_SUCCESS;
@@ -2166,6 +2201,7 @@ class Int8 {
   }
   multi method set-col(Int:D $j where * ≤ $!matrix.size2, @col where *.elems == $!matrix.size1) {
     my gsl_vector_char $v = gsl_vector_char_calloc($!matrix.size1);
+    LEAVE { gsl_vector_char_free($v) }
     gsl_vector_char_set($v, $_, @col[$_].Num) for ^$!matrix.size1;
     my $ret = gsl_matrix_char_set_col($!matrix, $j, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set col" if $ret ≠ GSL_SUCCESS;
@@ -2391,20 +2427,23 @@ class UInt8 {
     self
   }
   # Rows and columns
-  method get-row(Int:D $i where * < $!matrix.size1 --> Seq) {
+  method get-row(Int:D $i where * < $!matrix.size1) {
     my gsl_vector_uchar $v = gsl_vector_uchar_calloc($!matrix.size2);
+    LEAVE { gsl_vector_uchar_free($v) }
     my $ret = gsl_matrix_uchar_get_row($v, $!matrix, $i);
     fail X::Libgsl.new: errno => $ret, error => "Can't get row" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_uchar_get($v, $_) for ^$!matrix.size2;
+    my @row = gather take gsl_vector_uchar_get($v, $_) for ^$!matrix.size2;
   }
-  method get-col(Int:D $j where * < $!matrix.size2 --> Seq) {
+  method get-col(Int:D $j where * < $!matrix.size2) {
     my gsl_vector_uchar $v = gsl_vector_uchar_calloc($!matrix.size1);
+    LEAVE { gsl_vector_uchar_free($v) }
     my $ret = gsl_matrix_uchar_get_col($v, $!matrix, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't get col" if $ret ≠ GSL_SUCCESS;
-    gather take gsl_vector_uchar_get($v, $_) for ^$!matrix.size1;
+    my @col = gather take gsl_vector_uchar_get($v, $_) for ^$!matrix.size1;
   }
   multi method set-row(Int:D $i where * ≤ $!matrix.size1, @row where *.elems == $!matrix.size2) {
     my gsl_vector_uchar $v = gsl_vector_uchar_calloc($!matrix.size2);
+    LEAVE { gsl_vector_uchar_free($v) }
     gsl_vector_uchar_set($v, $_, @row[$_].Num) for ^$!matrix.size2;
     my $ret = gsl_matrix_uchar_set_row($!matrix, $i, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set row" if $ret ≠ GSL_SUCCESS;
@@ -2417,6 +2456,7 @@ class UInt8 {
   }
   multi method set-col(Int:D $j where * ≤ $!matrix.size2, @col where *.elems == $!matrix.size1) {
     my gsl_vector_uchar $v = gsl_vector_uchar_calloc($!matrix.size1);
+    LEAVE { gsl_vector_uchar_free($v) }
     gsl_vector_uchar_set($v, $_, @col[$_].Num) for ^$!matrix.size1;
     my $ret = gsl_matrix_uchar_set_col($!matrix, $j, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set col" if $ret ≠ GSL_SUCCESS;
@@ -2648,20 +2688,23 @@ class Complex64 {
     self
   }
   # Rows and columns
-  method get-row(Int:D $i where * < $!matrix.size1 --> Seq) {
+  method get-row(Int:D $i where * < $!matrix.size1) {
     my gsl_vector_complex $v = gsl_vector_complex_calloc($!matrix.size2);
+    LEAVE { gsl_vector_complex_free($v) }
     my $ret = gsl_matrix_complex_get_row($v, $!matrix, $i);
     fail X::Libgsl.new: errno => $ret, error => "Can't get row" if $ret ≠ GSL_SUCCESS;
-    gather take mgsl_vector_complex_get($v, $_) for ^$!matrix.size2;
+    my @row = gather take mgsl_vector_complex_get($v, $_) for ^$!matrix.size2;
   }
-  method get-col(Int:D $j where * < $!matrix.size2 --> Seq) {
+  method get-col(Int:D $j where * < $!matrix.size2) {
     my gsl_vector_complex $v = gsl_vector_complex_calloc($!matrix.size1);
+    LEAVE { gsl_vector_complex_free($v) }
     my $ret = gsl_matrix_complex_get_col($v, $!matrix, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't get col" if $ret ≠ GSL_SUCCESS;
-    gather take mgsl_vector_complex_get($v, $_) for ^$!matrix.size1;
+    my @col = gather take mgsl_vector_complex_get($v, $_) for ^$!matrix.size1;
   }
   multi method set-row(Int:D $i where * ≤ $!matrix.size1, @row where *.elems == $!matrix.size2) {
     my gsl_vector_complex $v = gsl_vector_complex_calloc($!matrix.size2);
+    LEAVE { gsl_vector_complex_free($v) }
     mgsl_vector_complex_set($v, $_, @row[$_].Num) for ^$!matrix.size2;
     my $ret = gsl_matrix_complex_set_row($!matrix, $i, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set row" if $ret ≠ GSL_SUCCESS;
@@ -2674,6 +2717,7 @@ class Complex64 {
   }
   multi method set-col(Int:D $j where * ≤ $!matrix.size2, @col where *.elems == $!matrix.size1) {
     my gsl_vector_complex $v = gsl_vector_complex_calloc($!matrix.size1);
+    LEAVE { gsl_vector_complex_free($v) }
     mgsl_vector_complex_set($v, $_, @col[$_].Num) for ^$!matrix.size1;
     my $ret = gsl_matrix_complex_set_col($!matrix, $j, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set col" if $ret ≠ GSL_SUCCESS;
@@ -2907,20 +2951,23 @@ class Complex32 {
     self
   }
   # Rows and columns
-  method get-row(Int:D $i where * < $!matrix.size1 --> Seq) {
+  method get-row(Int:D $i where * < $!matrix.size1) {
     my gsl_vector_complex_float $v = gsl_vector_complex_float_calloc($!matrix.size2);
+    LEAVE { gsl_vector_complex_float_free($v) }
     my $ret = gsl_matrix_complex_float_get_row($v, $!matrix, $i);
     fail X::Libgsl.new: errno => $ret, error => "Can't get row" if $ret ≠ GSL_SUCCESS;
-    gather take mgsl_vector_complex_float_get($v, $_) for ^$!matrix.size2;
+    my @row = gather take mgsl_vector_complex_float_get($v, $_) for ^$!matrix.size2;
   }
-  method get-col(Int:D $j where * < $!matrix.size2 --> Seq) {
+  method get-col(Int:D $j where * < $!matrix.size2) {
     my gsl_vector_complex_float $v = gsl_vector_complex_float_calloc($!matrix.size1);
+    LEAVE { gsl_vector_complex_float_free($v) }
     my $ret = gsl_matrix_complex_float_get_col($v, $!matrix, $j);
     fail X::Libgsl.new: errno => $ret, error => "Can't get col" if $ret ≠ GSL_SUCCESS;
-    gather take mgsl_vector_complex_float_get($v, $_) for ^$!matrix.size1;
+    my @col = gather take mgsl_vector_complex_float_get($v, $_) for ^$!matrix.size1;
   }
   multi method set-row(Int:D $i where * ≤ $!matrix.size1, @row where *.elems == $!matrix.size2) {
     my gsl_vector_complex_float $v = gsl_vector_complex_float_calloc($!matrix.size2);
+    LEAVE { gsl_vector_complex_float_free($v) }
     mgsl_vector_complex_float_set($v, $_, @row[$_].Num) for ^$!matrix.size2;
     my $ret = gsl_matrix_complex_float_set_row($!matrix, $i, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set row" if $ret ≠ GSL_SUCCESS;
@@ -2933,6 +2980,7 @@ class Complex32 {
   }
   multi method set-col(Int:D $j where * ≤ $!matrix.size2, @col where *.elems == $!matrix.size1) {
     my gsl_vector_complex_float $v = gsl_vector_complex_float_calloc($!matrix.size1);
+    LEAVE { gsl_vector_complex_float_free($v) }
     mgsl_vector_complex_float_set($v, $_, @col[$_].Num) for ^$!matrix.size1;
     my $ret = gsl_matrix_complex_float_set_col($!matrix, $j, $v);
     fail X::Libgsl.new: errno => $ret, error => "Can't set col" if $ret ≠ GSL_SUCCESS;
