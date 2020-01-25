@@ -5,6 +5,12 @@ NAME
 
 Math::Libgsl - An interface to libgsl, the Gnu Scientific Library.
 
+NOTICE
+======
+
+This is the last release of this module: it's too big and it takes an embarassing time to install.
+I'll split this module into a series of smaller and more manageable ones.
+
 Work In Progress
 ================
 
@@ -17,7 +23,41 @@ This is what's presently available as Raku subs:
 <th>C function group</th> <th>Raw Interface subs</th> <th>Raku subs or methods</th>
 </tr></thead>
 <tbody>
-<tr> <td>Mathematical functions Complex Polynomials Special functions Matrix Permutations</td> <td>23 61 15 519 1192 84</td> <td>20 - 10 515 1456 85</td> </tr> <tr> <td>Total</td> <td>1894</td> <td>2086</td> </tr>
+<tr>
+  <td>Mathematical functions</td>
+  <td>23</td>
+  <td>20</td>
+</tr>
+<tr>
+  <td>Complex</td>
+  <td>61</td>
+  <td>-</td>
+</tr>
+<tr>
+  <td>Polynomials</td>
+  <td>15</td>
+  <td>10</td>
+</tr>
+<tr>
+  <td>Special functions</td>
+  <td>519</td>
+  <td>515</td>
+</tr>
+<tr>
+  <td>Matrix</td>
+  <td>1192</td>
+  <td>1456</td>
+</tr>
+<tr>
+  <td>Permutations</td>
+  <td>84</td>
+  <td>85</td>
+</tr>
+<tr>
+  <td>Total</td>
+  <td>1894</td>
+  <td>2086</td>
+</tr>
 </tbody>
 </table>
 
