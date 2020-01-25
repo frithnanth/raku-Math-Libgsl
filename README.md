@@ -1,15 +1,15 @@
 [![Build Status](https://travis-ci.org/frithnanth/raku-Math-Libgsl.svg?branch=master)](https://travis-ci.org/frithnanth/raku-Math-Libgsl)
 
+NOTICE
+======
+
+**This is the last release of this module: it's too big and it takes an embarassing time to install.**
+**I'll split this module into a series of smaller and more manageable ones.**
+
 NAME
 ====
 
 Math::Libgsl - An interface to libgsl, the Gnu Scientific Library.
-
-NOTICE
-======
-
-This is the last release of this module: it's too big and it takes an embarassing time to install.
-I'll split this module into a series of smaller and more manageable ones.
 
 Work In Progress
 ================
