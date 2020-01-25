@@ -2,6 +2,10 @@ Revision history for Math-Libgsl
 
 {{$NEXT}}
 
+0.0.4  2020-01-25T13:53:37+01:00
+    - Add Matrix, Vector, Block
+    - Add Matrix and Vector methods to Permutation
+
 0.0.3  2019-12-25T19:24:49+01:00
     - Add Complex
     - Add Complex functions in Polynomial

@@ -1,6 +1,6 @@
 use v6;
 
-unit module Math::Libgsl::Raw::Permutation:ver<0.0.3>:auth<cpan:FRITH>;
+unit module Math::Libgsl::Raw::Permutation:ver<0.0.4>:auth<cpan:FRITH>;
 
 use Math::Libgsl::Raw::Matrix;
 use NativeCall;

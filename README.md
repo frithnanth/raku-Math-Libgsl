@@ -17,7 +17,7 @@ This is what's presently available as Raku subs:
 <th>C function group</th> <th>Raw Interface subs</th> <th>Raku subs or methods</th>
 </tr></thead>
 <tbody>
-<tr> <td>Mathematical functions Complex Polynomials Special functions Permutations</td> <td>23 61 15 519 62</td> <td>20 - 10 515 29</td> </tr> <tr> <td>Total</td> <td>680</td> <td>574</td> </tr>
+<tr> <td>Mathematical functions Complex Polynomials Special functions Matrix Permutations</td> <td>23 61 15 519 1192 84</td> <td>20 - 10 515 1456 85</td> </tr> <tr> <td>Total</td> <td>1894</td> <td>2086</td> </tr>
 </tbody>
 </table>
 
@@ -29,6 +29,7 @@ use Math::Libgsl::Raw::Elementary :ALL;
 use Math::Libgsl::Raw::Complex :ALL;
 use Math::Libgsl::Raw::Polynomial :ALL;
 use Math::Libgsl::Raw::Function :ALL;
+use Math::Libgsl::Raw::Matrix :ALL;
 use Math::Libgsl::Raw::Permutation :ALL;
 
 use Math::Libgsl::Constants;
@@ -36,6 +37,8 @@ use Math::Libgsl::Exception;
 use Math::Libgsl::Elementary :ALL;
 use Math::Libgsl::Polynomial :ALL;
 use Math::Libgsl::Function :ALL;
+use Math::Libgsl::Vector;
+use Math::Libgsl::Matrix;
 use Math::Libgsl::Permutation;
 ```
 
@@ -1926,6 +1929,374 @@ These routines compute the eta function η(n) for integer n.
 
 These routines compute the eta function η(s) for arbitrary s.
 
+Math::Libgsl::Vector
+--------------------
+
+The **Vector** class is available for multiple data types:
+
+<table class="pod-table">
+<thead><tr>
+<th>bytes</th> <th>C data type</th> <th>Raku native type</th> <th>Raku data type</th> <th>class name</th>
+</tr></thead>
+<tbody>
+<tr> <td>8</td> <td>double</td> <td>num64</td> <td>Num</td> <td>Math::Libgsl::Vector</td> </tr> <tr> <td>4</td> <td>float</td> <td>num32</td> <td>Num</td> <td>Math::Libgsl::Vector::Num32</td> </tr> <tr> <td>8</td> <td>long</td> <td>int64</td> <td>Int</td> <td>Math::Libgsl::Vector::Int64</td> </tr> <tr> <td>8</td> <td>unsigned long</td> <td>uint64</td> <td>UInt</td> <td>Math::Libgsl::Vector::UInt64</td> </tr> <tr> <td>4</td> <td>int</td> <td>int32</td> <td>Int</td> <td>Math::Libgsl::Vector::Int32</td> </tr> <tr> <td>4</td> <td>unsigned int</td> <td>uint32</td> <td>UInt</td> <td>Math::Libgsl::Vector::UInt32</td> </tr> <tr> <td>2</td> <td>short</td> <td>int16</td> <td>Int</td> <td>Math::Libgsl::Vector::Int16</td> </tr> <tr> <td>2</td> <td>unsigned short</td> <td>uint16</td> <td>UInt</td> <td>Math::Libgsl::Vector::UInt16</td> </tr> <tr> <td>1</td> <td>char</td> <td>int8</td> <td>Int</td> <td>Math::Libgsl::Vector::Int8</td> </tr> <tr> <td>1</td> <td>unsigned char</td> <td>uint8</td> <td>UInt</td> <td>Math::Libgsl::Vector::UInt8</td> </tr> <tr> <td>16</td> <td>-</td> <td>-</td> <td>Complex</td> <td>Math::Libgsl::Vector::Complex64</td> </tr> <tr> <td>8</td> <td>-</td> <td>-</td> <td>Complex</td> <td>Math::Libgsl::Vector::Complex32</td> </tr>
+</tbody>
+</table>
+
+The base class **Math::Libgsl::Vector** has been reserved for the most common use. All the following methods are available for every class, except where noted.
+
+### new(Int $size!) { self.bless(:$size) }
+
+### new(Int :$size!) { self.bless(:$size) }
+
+The constructor accepts one parameter: the vector's size; it can be passed as a Pair or as a single value.
+
+### get(Int:D $index! where * < $!vector.size --> Num)
+
+This method returns the value of a vector's element. It is possible to address a vector element as a Raku array element:
+
+    say $vector[1];
+
+or even:
+
+    say $vector[^10];
+
+### set(Int:D $index! where * < $!vector.size, Num(Cool)
+
+This method sets the value of a vector's element. This method can be chained. It is possible to address a vector element as a Raku array element:
+
+    $vector[1] = 3;
+
+Note that it's not possible to set a range of elements (yet). When used as a Raku array, this method can't be chained.
+
+### setall(Num(Cool))
+
+Sets all the elements of the vector to the same value. This method can be chained.
+
+### zero()
+
+Sets all the elements of the vector to zero. This method can be chained.
+
+### basis(Int:D $index! where * < $!vector.size)
+
+Sets all the elements of the vector to zero except for the element at $index, which is set to one. This method can be chained.
+
+### write(Str $filename!)
+
+Writes the vector to a file in binary form. This method can be chained.
+
+### read(Str $filename!)
+
+Reads the vector from a file in binary form. This method can be chained.
+
+### printf(Str $filename!, Str $format!)
+
+Writes the vector to a file using the specified format. This method can be chained.
+
+### scanf(Str $filename!)
+
+Reads the vector from a file containing formatted data. This method can be chained.
+
+### subvector(size_t $offset where * < $!vector.size, size_t $n)
+
+Creates a view on a subset of the vector, starting from $offset and of length $n. This method returns a new Vector object. Any operation done on this view affects the original vector as well.
+
+### subvector-stride(size_t $offset where * < $!vector.size, size_t $stride, size_t $n)
+
+Creates a view on a subset of the vector, starting from $offset and of length $n, with stride $stride. This method returns a new Vector object. Any operation done on this view affects the original vector as well.
+
+### vec-view-array(@array)
+
+This is not a method, but a sub. It creates a Vector object from the Raku array.
+
+### vec-view-array-stride(@array, size_t $stride)
+
+This is not a method, but a sub. It creates a Vector object from the Raku array, with stride $stride.
+
+### copy(Math::Libgsl::Vector $src where $!vector.size == .vector.size)
+
+This method copies the vector $src into the current object. This method can be chained.
+
+### swap(Math::Libgsl::Vector $w where $!vector.size == .vector.size)
+
+This method exchanges the elements of the current vector with the ones of the vector $w. This method can be chained.
+
+### swap-elems(Int $i where * < $!vector.size, Int $j where * < $!vector.size)
+
+This method exchanges the $i-th and $j-th elements in place. This method can be chained.
+
+### reverse()
+
+This method reverses the order of the elements of the vector. This method can be chained.
+
+### add(Math::Libgsl::Vector $b where $!vector.size == .vector.size)
+
+### sub(Math::Libgsl::Vector $b where $!vector.size == .vector.size)
+
+### mul(Math::Libgsl::Vector $b where $!vector.size == .vector.size)
+
+### div(Math::Libgsl::Vector $b where $!vector.size == .vector.size)
+
+These methods perform operations on the elements of two vectors. The object on which the method is called is the one whose values are changed. All these methods can be chained.
+
+### scale(Num(Cool) $x)
+
+This method multiplies the elements of the vector by a factor $x. This method can be chained.
+
+### add-constant(Num(Cool) $x)
+
+This method add a constant to the elements of the vector. This method can be chained.
+
+### max(--> Num)
+
+### min(--> Num)
+
+These two methods return the min and max value in the vector.
+
+### minmax(--> List)
+
+This method returns a list of two values: the min and max value in the vector.
+
+### max-index(--> Int)
+
+### min-index(--> Int)
+
+These two methods return the index of the min and max value in the vector.
+
+### minmax-index(--> List)
+
+This method returns a list of two values: the indices of the min and max value in the vector.
+
+### is-null(--> Bool)
+
+### is-pos(--> Bool)
+
+### is-neg(--> Bool)
+
+### is-nonneg(--> Bool)
+
+These methods return True if all the elements of the vector are zero, strictly positive, strictly negative, or non-negative.
+
+### is-equal(Math::Libgsl::Vector $b --> Bool)
+
+This method returns True if the vectors are equal element-wise.
+
+Math::Libgsl::Matrix
+--------------------
+
+The **Matrix** class is available for multiple data types:
+
+<table class="pod-table">
+<thead><tr>
+<th>bytes</th> <th>C data type</th> <th>Raku native type</th> <th>Raku data type</th> <th>class name</th>
+</tr></thead>
+<tbody>
+<tr> <td>8</td> <td>double</td> <td>num64</td> <td>Num</td> <td>Math::Libgsl::Matrix</td> </tr> <tr> <td>4</td> <td>float</td> <td>num32</td> <td>Num</td> <td>Math::Libgsl::Matrix::Num32</td> </tr> <tr> <td>8</td> <td>long</td> <td>int64</td> <td>Int</td> <td>Math::Libgsl::Matrix::Int64</td> </tr> <tr> <td>8</td> <td>unsigned long</td> <td>uint64</td> <td>UInt</td> <td>Math::Libgsl::Matrix::UInt64</td> </tr> <tr> <td>4</td> <td>int</td> <td>int32</td> <td>Int</td> <td>Math::Libgsl::Matrix::Int32</td> </tr> <tr> <td>4</td> <td>unsigned int</td> <td>uint32</td> <td>UInt</td> <td>Math::Libgsl::Matrix::UInt32</td> </tr> <tr> <td>2</td> <td>short</td> <td>int16</td> <td>Int</td> <td>Math::Libgsl::Matrix::Int16</td> </tr> <tr> <td>2</td> <td>unsigned short</td> <td>uint16</td> <td>UInt</td> <td>Math::Libgsl::Matrix::UInt16</td> </tr> <tr> <td>1</td> <td>char</td> <td>int8</td> <td>Int</td> <td>Math::Libgsl::Matrix::Int8</td> </tr> <tr> <td>1</td> <td>unsigned char</td> <td>uint8</td> <td>UInt</td> <td>Math::Libgsl::Matrix::UInt8</td> </tr> <tr> <td>16</td> <td>-</td> <td>-</td> <td>Complex</td> <td>Math::Libgsl::Matrix::Complex64</td> </tr> <tr> <td>8</td> <td>-</td> <td>-</td> <td>Complex</td> <td>Math::Libgsl::Matrix::Complex32</td> </tr>
+</tbody>
+</table>
+
+The base class **Math::Libgsl::Matrix** has been reserved for the most common use. All the following methods are available for every class, except where noted.
+
+### new(Int $size1!, Int $size2!)
+
+### new(Int :$size1!, Int :$size2!)
+
+The constructor accepts two parameters: the matrix's sizes; they can be passed as Pairs or as a single values.
+
+### get(Int:D $i! where * < $!matrix.size1, Int:D $j! where * < $!matrix.size2 --> Num)
+
+This method returns the value of a matrix's element. It is possible to address a matrix element as a Raku shaped array element:
+
+    say $matrix[1;2];
+
+### set(Int:D $i! where * < $!matrix.size1, Int:D $j! where * < $!matrix.size2, Num(Cool)
+
+This method sets the value of a matrix's element. This method can be chained. It is possible to address a matrix element as a Raku shaped array element:
+
+    $matrix[1;3] = 3;
+
+### setall(Num(Cool))
+
+Sets all the elements of the matrix to the same value. This method can be chained.
+
+### zero()
+
+Sets all the elements of the matrix to zero. This method can be chained.
+
+### identity()
+
+Sets all elements of the matrix to the corrisponding elements of the identity matrix.
+
+### write(Str $filename!)
+
+Writes the matrix to a file in binary form. This method can be chained.
+
+### read(Str $filename!)
+
+Reads the matrix from a file in binary form. This method can be chained.
+
+### printf(Str $filename!, Str $format!)
+
+Writes the matrix to a file using the specified format. This method can be chained.
+
+### scanf(Str $filename!)
+
+Reads the matrix from a file containing formatted data. This method can be chained.
+
+### submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2)
+
+Creates a view on a subset of the matrix, starting from coordinates ($k1, $k2) with $n1 rows and $n2 columns. This method returns a new Matrix object. Any operation done on this view affects the original matrix as well.
+
+### mat-view-array(@array where { @array ~~ Array && @array.shape.elems == 2 })
+
+This is not a method, but a sub. It creates a Matrix object from the Raku shaped array.
+
+### mat-view-array-tda(@array where { @array ~~ Array && @array.shape.elems == 2 }, size_t $tda)
+
+This is not a method, but a sub. It creates a Matrix object from the Raku array, with a physical number of columns $tda which may differ from the correspondig dimension of the matrix.
+
+### mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2)
+
+This is not a method, but a sub. It creates a Matrix object from a Vector object. The resultimg matrix will have $n1 rows and $n2 columns.
+
+### mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda)
+
+This is not a method, but a sub. It creates a Matrix object from a Vector object, with a physical number of columns $tda which may differ from the correspondig dimension of the matrix. The resultimg matrix will have $n1 rows and $n2 columns.
+
+### row-view(size_t $i where * < $!matrix.size1)
+
+This method creates a Vector object from row $i of the matrix.
+
+### col-view(size_t $j where * < $!matrix.size2)
+
+This method creates a Vector object from column $j of the matrix.
+
+### subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n)
+
+This method creates a Vector object from row $i of the matrix, starting from $offset and containing $n elements.
+
+### subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n)
+
+This method creates a Vector object from column $j of the matrix, starting from $offset and containing $n elements.
+
+### diagonal-view()
+
+This method creates a Vector object from the diagonal of the matrix.
+
+### subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2))
+
+This method creates a Vector object from the subdiagonal number $k of the matrix.
+
+### superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2))
+
+This method creates a Vector object from the superdiagonal number $k of the matrix.
+
+### copy(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2)
+
+This method copies the $src matrix into the current one. This method can be chained.
+
+### swap(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2)
+
+This method swaps elements of the $src matrix and the current one. This method can be chained.
+
+### get-row(Int:D $i where * < $!matrix.size1)
+
+This method returns an array from row number $i.
+
+### get-col(Int:D $j where * < $!matrix.size2)
+
+This method returns an array from column number $j.
+
+### set-row(Int:D $i where * ≤ $!matrix.size1, @row where *.elems == $!matrix.size2)
+
+### set-row(Int:D $i where * ≤ $!matrix.size1, Math::Libgsl::Vector $v where .vector.size == $!matrix.size2)
+
+These methods set row number $i of the matrix from a Raku array or a Vector object. This method can be chained.
+
+### set-col(Int:D $j where * ≤ $!matrix.size2, @col where *.elems == $!matrix.size1)
+
+### set-col(Int:D $j where * ≤ $!matrix.size2, Math::Libgsl::Vector $v where .vector.size == $!matrix.size1)
+
+These methods set column number $j of the matrix from a Raku array or a Vector object. This method can be chained.
+
+### swap-rows(Int:D $i where * ≤ $!matrix.size1, Int:D $j where * ≤ $!matrix.size1)
+
+This method swaps rows $i and $j. This method can be chained.
+
+### swap-cols(Int:D $i where * ≤ $!matrix.size2, Int:D $j where * ≤ $!matrix.size2)
+
+This method swaps columns $i and $j. This method can be chained.
+
+### swap-rowcol(Int:D $i where * ≤ $!matrix.size1, Int:D $j where * ≤ $!matrix.size1)
+
+This method exchanges row number $i with column number $j of a square matrix. This method can be chained.
+
+### copy-transpose(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size2 && $!matrix.size2 == .matrix.size1)
+
+This method copies a matrix into the current one, while transposing the elements. This method can be chained.
+
+### transpose()
+
+This method transposes the current matrix. This method can be chained.
+
+### add(Math::Libgsl::Matrix $b where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2)
+
+This method adds a matrix to the current one element-wise. This method can be chained.
+
+### sub(Math::Libgsl::Matrix $b where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2)
+
+This method subtracts a matrix from the current one element-wise. This method can be chained.
+
+### mul(Math::Libgsl::Matrix $b where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2)
+
+This method multiplies a matrix to the current one element-wise. This method can be chained.
+
+### div(Math::Libgsl::Matrix $b where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2)
+
+This method divides the current matrix by another one element-wise. This method can be chained.
+
+### scale(Num(Cool) $x)
+
+This method multiplies the elements of the current matrix by a constant value. This method can be chained.
+
+### add-constant(Num(Cool) $x)
+
+This method adds a constant to the elements of the current matrix. This method can be chained.
+
+### max(--> Num)
+
+### min(--> Num)
+
+These two methods return the min and max value in the matrix.
+
+### minmax(--> List)
+
+This method returns a list of two values: the min and max value in the matrix.
+
+### max-index(--> Int)
+
+### min-index(--> Int)
+
+These two methods return the index of the min and max value in the matrix.
+
+### minmax-index(--> List)
+
+This method returns a list of two values: the indices of the min and max value in the matrix.
+
+### is-null(--> Bool)
+
+### is-pos(--> Bool)
+
+### is-neg(--> Bool)
+
+### is-nonneg(--> Bool)
+
+These methods return True if all the elements of the matrix are zero, strictly positive, strictly negative, or non-negative.
+
+### is-equal(Math::Libgsl::Matrix $b --> Bool)
+
+This method returns True if the matrices are equal element-wise.
+
 Math::Libgsl::Permutation
 -------------------------
 
@@ -1991,21 +2362,71 @@ This method applies the current permutation to the **@data** array with stride *
 
 This method applies the inverse of the current permutation to the **@data** array with stride **$stride**.
 
-### permute-complex(Complex @data!, Int $stride! --> List)
+### permute-complex64(Complex @data!, Int $stride! --> List)
 
 This method applies the current permutation to the **@data** array array of Complex with stride **$stride**.
 
-### permute-complex-inverse(Complex @data!, Int $stride! --> List)
+### permute-complex64-inverse(Complex @data!, Int $stride! --> List)
 
 This method applies the inverse of the current permutation to the **@data** array of Complex with stride **$stride**.
 
-### permute-complex-float(Complex @data!, Int $stride! --> List)
+### permute-complex32(Complex @data!, Int $stride! --> List)
 
 This method applies the current permutation to the **@data** array array of Complex with stride **$stride**, trating the numbers as single precision floats.
 
-### permute-complex-float-inverse(Complex @data!, Int $stride! --> List)
+### permute-complex32-inverse(Complex @data!, Int $stride! --> List)
 
 This method applies the inverse of the current permutation to the **@data** array of Complex with stride **$stride**, trating the numbers as single precision floats.
+
+### permute-vector(Math::Libgsl::Vector $v)
+
+This method applies the permutation to a Vector object and returns the Vector object itself. As in the case of the Vector object, this method is available for all the supported data type, so we have
+
+  * permute-vector-num32
+
+  * permute-vector-int32
+
+  * permute-vector-uint32
+
+…and so on.
+
+### permute-vector-inv(Math::Libgsl::Vector $v)
+
+This method applies the inverse permutation to a Vector object and returns the Vector object itself. As in the case of the Vector object, this method is available for all the supported data type, so we have
+
+  * permute-vector-inv-num32
+
+  * permute-vector-inv-int32
+
+  * permute-vector-inv-uint32
+
+…and so on.
+
+### permute-matrix(Math::Libgsl::Matrix $m) This method applies the permutation to a Matrix object and returns the Matrix object itself. As in the case of the Matrix object, this method is available for all the supported data type, so we have
+
+  * permute-matrix-num32
+
+  * permute-matrix-int32
+
+  * permute-matrix-uint32
+
+…and so on.
+
+### write(Str $filename! --> Int)
+
+This method writes the permutation data to a file.
+
+### read(Str $filename! --> Int)
+
+This method reads the permutation data from a file. The permutation must be of the same size of the one to be read.
+
+### fprintf(Str $filename!, Str $format! --> Int)
+
+This method writes the permutation data to a file, using the format specifier.
+
+### fscanf(Str $filename!)
+
+This method reads the permutation data from a file. The permutation must be of the same size of the one to be read.
 
 ### multiply($dst! where * ~~ Math::Libgsl::Permutation, $p2! where * ~~ Math::Libgsl::Permutation)
 
