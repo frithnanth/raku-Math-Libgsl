@@ -36,6 +36,24 @@ sub gsl_permutation_prev(gsl_permutation $p --> int32) is native(LIB) is export(
 # Applying Permutations
 sub gsl_permute(CArray[size_t] $p, CArray[num64] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
 sub gsl_permute_inverse(CArray[size_t] $p, CArray[num64] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_float(CArray[size_t] $p, CArray[num32] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_float_inverse(CArray[size_t] $p, CArray[num32] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_int(CArray[size_t] $p, CArray[int32] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_int_inverse(CArray[size_t] $p, CArray[int32] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_uint(CArray[size_t] $p, CArray[uint32] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_uint_inverse(CArray[size_t] $p, CArray[uint32] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_long(CArray[size_t] $p, CArray[int64] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_long_inverse(CArray[size_t] $p, CArray[int64] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_ulong(CArray[size_t] $p, CArray[uint64] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_ulong_inverse(CArray[size_t] $p, CArray[uint64] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_short(CArray[size_t] $p, CArray[int16] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_short_inverse(CArray[size_t] $p, CArray[int16] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_ushort(CArray[size_t] $p, CArray[uint16] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_ushort_inverse(CArray[size_t] $p, CArray[uint16] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_char(CArray[size_t] $p, CArray[int8] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_char_inverse(CArray[size_t] $p, CArray[int8] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_uchar(CArray[size_t] $p, CArray[uint8] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
+sub gsl_permute_uchar_inverse(CArray[size_t] $p, CArray[uint8] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
 sub gsl_permute_complex(CArray[size_t] $p, CArray[num64] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
 sub gsl_permute_complex_inverse(CArray[size_t] $p, CArray[num64] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
 sub gsl_permute_complex_float(CArray[size_t] $p, CArray[num32] $data, size_t $stride, size_t $n --> int32) is native(LIB) is export(:permapply) { * }
