@@ -167,51 +167,51 @@ class gsl_vector_complex_float is repr('CStruct') is export {
 }
 
 class gsl_vector_view is repr('CStruct') is export {
-  has gsl_vector      $.vector;
+  HAS gsl_vector      $.vector;
 }
 
 class gsl_vector_float_view is repr('CStruct') is export {
-  has gsl_vector_float      $.vector;
+  HAS gsl_vector_float      $.vector;
 }
 
 class gsl_vector_int_view is repr('CStruct') is export {
-  has gsl_vector_int      $.vector;
+  HAS gsl_vector_int      $.vector;
 }
 
 class gsl_vector_uint_view is repr('CStruct') is export {
-  has gsl_vector_uint      $.vector;
+  HAS gsl_vector_uint      $.vector;
 }
 
 class gsl_vector_long_view is repr('CStruct') is export {
-  has gsl_vector_long      $.vector;
+  HAS gsl_vector_long      $.vector;
 }
 
 class gsl_vector_ulong_view is repr('CStruct') is export {
-  has gsl_vector_ulong      $.vector;
+  HAS gsl_vector_ulong      $.vector;
 }
 
 class gsl_vector_short_view is repr('CStruct') is export {
-  has gsl_vector_short      $.vector;
+  HAS gsl_vector_short      $.vector;
 }
 
 class gsl_vector_ushort_view is repr('CStruct') is export {
-  has gsl_vector_ushort      $.vector;
+  HAS gsl_vector_ushort      $.vector;
 }
 
 class gsl_vector_char_view is repr('CStruct') is export {
-  has gsl_vector_char      $.vector;
+  HAS gsl_vector_char      $.vector;
 }
 
 class gsl_vector_uchar_view is repr('CStruct') is export {
-  has gsl_vector_uchar      $.vector;
+  HAS gsl_vector_uchar      $.vector;
 }
 
 class gsl_vector_complex_view is repr('CStruct') is export {
-  has gsl_vector_complex      $.vector;
+  HAS gsl_vector_complex      $.vector;
 }
 
 class gsl_vector_complex_float_view is repr('CStruct') is export {
-  has gsl_vector_complex_float      $.vector;
+  HAS gsl_vector_complex_float      $.vector;
 }
 
 class gsl_matrix is repr('CStruct') is export {
@@ -323,51 +323,51 @@ class gsl_matrix_complex_float is repr('CStruct') is export {
 }
 
 class gsl_matrix_view is repr('CStruct') is export {
-  has gsl_matrix      $.matrix;
+  HAS gsl_matrix      $.matrix;
 }
 
 class gsl_matrix_float_view is repr('CStruct') is export {
-  has gsl_matrix_float      $.matrix;
+  HAS gsl_matrix_float      $.matrix;
 }
 
 class gsl_matrix_int_view is repr('CStruct') is export {
-  has gsl_matrix_int      $.matrix;
+  HAS gsl_matrix_int      $.matrix;
 }
 
 class gsl_matrix_uint_view is repr('CStruct') is export {
-  has gsl_matrix_uint      $.matrix;
+  HAS gsl_matrix_uint      $.matrix;
 }
 
 class gsl_matrix_long_view is repr('CStruct') is export {
-  has gsl_matrix_long      $.matrix;
+  HAS gsl_matrix_long      $.matrix;
 }
 
 class gsl_matrix_ulong_view is repr('CStruct') is export {
-  has gsl_matrix_ulong      $.matrix;
+  HAS gsl_matrix_ulong      $.matrix;
 }
 
 class gsl_matrix_short_view is repr('CStruct') is export {
-  has gsl_matrix_short      $.matrix;
+  HAS gsl_matrix_short      $.matrix;
 }
 
 class gsl_matrix_ushort_view is repr('CStruct') is export {
-  has gsl_matrix_ushort      $.matrix;
+  HAS gsl_matrix_ushort      $.matrix;
 }
 
 class gsl_matrix_char_view is repr('CStruct') is export {
-  has gsl_matrix_char      $.matrix;
+  HAS gsl_matrix_char      $.matrix;
 }
 
 class gsl_matrix_uchar_view is repr('CStruct') is export {
-  has gsl_matrix_uchar      $.matrix;
+  HAS gsl_matrix_uchar      $.matrix;
 }
 
 class gsl_matrix_complex_view is repr('CStruct') is export {
-  has gsl_matrix_complex      $.matrix;
+  HAS gsl_matrix_complex      $.matrix;
 }
 
 class gsl_matrix_complex_float_view is repr('CStruct') is export {
-  has gsl_matrix_complex_float      $.matrix;
+  HAS gsl_matrix_complex_float      $.matrix;
 }
 
 # Block allocation

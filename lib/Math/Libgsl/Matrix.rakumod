@@ -37,7 +37,8 @@ method AT-POS(Math::Libgsl::Matrix:D: Int:D $i! where * < $!matrix.size1, Int:D 
   gsl_matrix_get(self.matrix, $i, $j)
 }
 method set(Int:D $i! where * < $!matrix.size1, Int:D $j! where * < $!matrix.size2, Num(Cool) $x!) {
-  gsl_matrix_set($!matrix, $i, $j, $x); self
+  gsl_matrix_set($!matrix, $i, $j, $x);
+  self
 }
 method ASSIGN-POS(Math::Libgsl::Matrix:D: Int:D $i! where * < $!matrix.size1, Int:D $j! where * < $!matrix.size2, Num(Cool) $x!) {
   gsl_matrix_set(self.matrix, $i, $j, $x)
@@ -67,60 +68,60 @@ method scanf(Str $filename!) {
   self
 }
 # View
-#method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
-#  fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
-#    if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
-#  my Math::Libgsl::Matrix::MView $mv .= new;
-#  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
-#}
-#sub mat-view-array(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }) is export {
-#  my Math::Libgsl::Matrix::MView $mv .= new;
-#  my CArray[num64] $a .= new: @array.Array».Num;
-#  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
-#}
-#sub mat-view-array-tda(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }, size_t $tda) is export {
-#  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
-#  my Math::Libgsl::Matrix::MView $mv .= new;
-#  my CArray[num64] $a .= new: @array.Array».Num;
-#  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
-#}
-#sub mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
-#  my Math::Libgsl::Matrix::MView $mv .= new;
-#  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_view_vector($mv.view, $v.vector, $n1, $n2);
-#}
-#sub mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
-#  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
-#  my Math::Libgsl::Matrix::MView $mv .= new;
-#  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_view_vector_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
-#}
-#method row-view(size_t $i where * < $!matrix.size1) {
-#  my Math::Libgsl::Vector::VView $vv .= new;
-#  Math::Libgsl::Vector.new: vector => mgsl_matrix_row($vv.view, $!matrix, $i);
-#}
-#method col-view(size_t $j where * < $!matrix.size2) {
-#  my Math::Libgsl::Vector::VView $vv .= new;
-#  Math::Libgsl::Vector.new: vector => mgsl_matrix_column($vv.view, $!matrix, $j);
-#}
-#method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
-#  my Math::Libgsl::Vector::VView $vv .= new;
-#  Math::Libgsl::Vector.new: vector => mgsl_matrix_subrow($vv.view, $!matrix, $i, $offset, $n);
-#}
-#method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
-#  my Math::Libgsl::Vector::VView $vv .= new;
-#  Math::Libgsl::Vector.new: vector => mgsl_matrix_subcolumn($vv.view, $!matrix, $j, $offset, $n);
-#}
-#method diagonal-view() {
-#  my Math::Libgsl::Vector::VView $vv .= new;
-#  Math::Libgsl::Vector.new: vector => mgsl_matrix_diagonal($vv.view, $!matrix);
-#}
-#method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-#  my Math::Libgsl::Vector::VView $vv .= new;
-#  Math::Libgsl::Vector.new: vector => mgsl_matrix_subdiagonal($vv.view, $!matrix, $k);
-#}
-#method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-#  my Math::Libgsl::Vector::VView $vv .= new;
-#  Math::Libgsl::Vector.new: vector => mgsl_matrix_superdiagonal($vv.view, $!matrix, $k);
-#}
+method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
+    if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
+  my Math::Libgsl::Matrix::MView $mv .= new;
+  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
+}
+sub mat-view-array(@array where { @array ~~ Array && @array.shape.elems == 2 }) is export {
+  my Math::Libgsl::Matrix::MView $mv .= new;
+  my CArray[num64] $a .= new: @array.Array».Num;
+  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
+}
+sub mat-view-array-tda(@array where { @array ~~ Array && @array.shape.elems == 2 }, size_t $tda) is export {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
+  my Math::Libgsl::Matrix::MView $mv .= new;
+  my CArray[num64] $a .= new: @array.Array».Num;
+  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
+}
+sub mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
+  my Math::Libgsl::Matrix::MView $mv .= new;
+  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_view_vector($mv.view, $v.vector, $n1, $n2);
+}
+sub mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
+  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
+  my Math::Libgsl::Matrix::MView $mv .= new;
+  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_view_vector_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
+}
+method row-view(size_t $i where * < $!matrix.size1) {
+  my Math::Libgsl::Vector::VView $vv .= new;
+  Math::Libgsl::Vector.new: vector => mgsl_matrix_row($vv.view, $!matrix, $i);
+}
+method col-view(size_t $j where * < $!matrix.size2) {
+  my Math::Libgsl::Vector::VView $vv .= new;
+  Math::Libgsl::Vector.new: vector => mgsl_matrix_column($vv.view, $!matrix, $j);
+}
+method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
+  my Math::Libgsl::Vector::VView $vv .= new;
+  Math::Libgsl::Vector.new: vector => mgsl_matrix_subrow($vv.view, $!matrix, $i, $offset, $n);
+}
+method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
+  my Math::Libgsl::Vector::VView $vv .= new;
+  Math::Libgsl::Vector.new: vector => mgsl_matrix_subcolumn($vv.view, $!matrix, $j, $offset, $n);
+}
+method diagonal-view() {
+  my Math::Libgsl::Vector::VView $vv .= new;
+  Math::Libgsl::Vector.new: vector => mgsl_matrix_diagonal($vv.view, $!matrix);
+}
+method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+  my Math::Libgsl::Vector::VView $vv .= new;
+  Math::Libgsl::Vector.new: vector => mgsl_matrix_subdiagonal($vv.view, $!matrix, $k);
+}
+method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+  my Math::Libgsl::Vector::VView $vv .= new;
+  Math::Libgsl::Vector.new: vector => mgsl_matrix_superdiagonal($vv.view, $!matrix, $k);
+}
 # Copying matrices
 method copy(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2) {
   my $ret = gsl_matrix_memcpy($!matrix, $src.matrix);
@@ -321,60 +322,60 @@ class Num32 {
     self
   }
   # View
-  #method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
-  #    if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_float_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
-  #}
-  #sub mat-view-array(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[num32] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_float_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
-  #}
-  #sub mat-view-array-tda(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[num32] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_float_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
-  #}
-  #sub mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_float_view_vector_float($mv.view, $v.vector, $n1, $n2);
-  #}
-  #sub mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_float_view_vector_float_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
-  #}
-  #method row-view(size_t $i where * < $!matrix.size1) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_float_row($vv.view, $!matrix, $i);
-  #}
-  #method col-view(size_t $j where * < $!matrix.size2) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_float_column($vv.view, $!matrix, $j);
-  #}
-  #method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_float_subrow($vv.view, $!matrix, $i, $offset, $n);
-  #}
-  #method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_float_subcolumn($vv.view, $!matrix, $j, $offset, $n);
-  #}
-  #method diagonal-view() {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_float_diagonal($vv.view, $!matrix);
-  #}
-  #method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_float_subdiagonal($vv.view, $!matrix, $k);
-  #}
-  #method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_float_superdiagonal($vv.view, $!matrix, $k);
-  #}
+  method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
+      if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_float_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
+  }
+  sub mat-num32-view-array(@array where { @array ~~ Array && @array.shape.elems == 2 }) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[num32] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_float_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
+  }
+  sub mat-num32-view-array-tda(@array where { @array ~~ Array && @array.shape.elems == 2 }, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[num32] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_float_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
+  }
+  sub mat-num32-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_float_view_vector($mv.view, $v.vector, $n1, $n2);
+  }
+  sub mat-num32-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_float_view_vector_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
+  }
+  method row-view(size_t $i where * < $!matrix.size1) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_float_row($vv.view, $!matrix, $i);
+  }
+  method col-view(size_t $j where * < $!matrix.size2) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_float_column($vv.view, $!matrix, $j);
+  }
+  method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_float_subrow($vv.view, $!matrix, $i, $offset, $n);
+  }
+  method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_float_subcolumn($vv.view, $!matrix, $j, $offset, $n);
+  }
+  method diagonal-view() {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_float_diagonal($vv.view, $!matrix);
+  }
+  method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_float_subdiagonal($vv.view, $!matrix, $k);
+  }
+  method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_float_superdiagonal($vv.view, $!matrix, $k);
+  }
   # Copying matrices
   method copy(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2) {
     my $ret = gsl_matrix_float_memcpy($!matrix, $src.matrix);
@@ -576,60 +577,60 @@ class Int32 {
     self
   }
   # View
-  #method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
-  #    if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_int_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
-  #}
-  #sub mat-view-array(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[int32] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_int_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
-  #}
-  #sub mat-view-array-tda(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[int32] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_int_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
-  #}
-  #sub mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_int_view_vector_int($mv.view, $v.vector, $n1, $n2);
-  #}
-  #sub mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_int_view_vector_int_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
-  #}
-  #method row-view(size_t $i where * < $!matrix.size1) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_int_row($vv.view, $!matrix, $i);
-  #}
-  #method col-view(size_t $j where * < $!matrix.size2) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_int_column($vv.view, $!matrix, $j);
-  #}
-  #method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_int_subrow($vv.view, $!matrix, $i, $offset, $n);
-  #}
-  #method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_int_subcolumn($vv.view, $!matrix, $j, $offset, $n);
-  #}
-  #method diagonal-view() {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_int_diagonal($vv.view, $!matrix);
-  #}
-  #method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_int_subdiagonal($vv.view, $!matrix, $k);
-  #}
-  #method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_int_superdiagonal($vv.view, $!matrix, $k);
-  #}
+  method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
+      if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_int_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
+  }
+  sub mat-int32-view-array(@array where { @array ~~ Array && @array.shape.elems == 2 }) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[int32] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_int_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
+  }
+  sub mat-int32-view-array-tda(@array where { @array ~~ Array && @array.shape.elems == 2 }, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[int32] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_int_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
+  }
+  sub mat-int32-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_int_view_vector($mv.view, $v.vector, $n1, $n2);
+  }
+  sub mat-int32-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_int_view_vector_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
+  }
+  method row-view(size_t $i where * < $!matrix.size1) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_int_row($vv.view, $!matrix, $i);
+  }
+  method col-view(size_t $j where * < $!matrix.size2) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_int_column($vv.view, $!matrix, $j);
+  }
+  method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_int_subrow($vv.view, $!matrix, $i, $offset, $n);
+  }
+  method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_int_subcolumn($vv.view, $!matrix, $j, $offset, $n);
+  }
+  method diagonal-view() {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_int_diagonal($vv.view, $!matrix);
+  }
+  method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_int_subdiagonal($vv.view, $!matrix, $k);
+  }
+  method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_int_superdiagonal($vv.view, $!matrix, $k);
+  }
   # Copying matrices
   method copy(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2) {
     my $ret = gsl_matrix_int_memcpy($!matrix, $src.matrix);
@@ -831,60 +832,60 @@ class UInt32 {
     self
   }
   # View
-  #method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
-  #    if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uint_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
-  #}
-  #sub mat-view-array(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[uint32] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uint_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
-  #}
-  #sub mat-view-array-tda(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[uint32] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uint_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
-  #}
-  #sub mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uint_view_vector_uint($mv.view, $v.vector, $n1, $n2);
-  #}
-  #sub mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uint_view_vector_uint_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
-  #}
-  #method row-view(size_t $i where * < $!matrix.size1) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_row($vv.view, $!matrix, $i);
-  #}
-  #method col-view(size_t $j where * < $!matrix.size2) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_column($vv.view, $!matrix, $j);
-  #}
-  #method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_subrow($vv.view, $!matrix, $i, $offset, $n);
-  #}
-  #method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_subcolumn($vv.view, $!matrix, $j, $offset, $n);
-  #}
-  #method diagonal-view() {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_diagonal($vv.view, $!matrix);
-  #}
-  #method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_subdiagonal($vv.view, $!matrix, $k);
-  #}
-  #method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_superdiagonal($vv.view, $!matrix, $k);
-  #}
+  method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
+      if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uint_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
+  }
+  sub mat-uint32-view-array(@array where { @array ~~ Array && @array.shape.elems == 2 }) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[uint32] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uint_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
+  }
+  sub mat-uint32-view-array-tda(@array where { @array ~~ Array && @array.shape.elems == 2 }, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[uint32] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uint_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
+  }
+  sub mat-uint32-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uint_view_vector($mv.view, $v.vector, $n1, $n2);
+  }
+  sub mat-uint32-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uint_view_vector_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
+  }
+  method row-view(size_t $i where * < $!matrix.size1) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_row($vv.view, $!matrix, $i);
+  }
+  method col-view(size_t $j where * < $!matrix.size2) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_column($vv.view, $!matrix, $j);
+  }
+  method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_subrow($vv.view, $!matrix, $i, $offset, $n);
+  }
+  method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_subcolumn($vv.view, $!matrix, $j, $offset, $n);
+  }
+  method diagonal-view() {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_diagonal($vv.view, $!matrix);
+  }
+  method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_subdiagonal($vv.view, $!matrix, $k);
+  }
+  method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uint_superdiagonal($vv.view, $!matrix, $k);
+  }
   # Copying matrices
   method copy(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2) {
     my $ret = gsl_matrix_uint_memcpy($!matrix, $src.matrix);
@@ -1086,60 +1087,60 @@ class Int64 {
     self
   }
   # View
-  #method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
-  #    if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_long_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
-  #}
-  #sub mat-view-array(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[int64] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_long_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
-  #}
-  #sub mat-view-array-tda(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[int64] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_long_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
-  #}
-  #sub mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_long_view_vector_long($mv.view, $v.vector, $n1, $n2);
-  #}
-  #sub mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_long_view_vector_long_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
-  #}
-  #method row-view(size_t $i where * < $!matrix.size1) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_long_row($vv.view, $!matrix, $i);
-  #}
-  #method col-view(size_t $j where * < $!matrix.size2) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_long_column($vv.view, $!matrix, $j);
-  #}
-  #method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_long_subrow($vv.view, $!matrix, $i, $offset, $n);
-  #}
-  #method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_long_subcolumn($vv.view, $!matrix, $j, $offset, $n);
-  #}
-  #method diagonal-view() {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_long_diagonal($vv.view, $!matrix);
-  #}
-  #method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_long_subdiagonal($vv.view, $!matrix, $k);
-  #}
-  #method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_long_superdiagonal($vv.view, $!matrix, $k);
-  #}
+  method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
+      if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_long_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
+  }
+  sub mat-int64-view-array(@array where { @array ~~ Array && @array.shape.elems == 2 }) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[int64] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_long_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
+  }
+  sub mat-int64-view-array-tda(@array where { @array ~~ Array && @array.shape.elems == 2 }, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[int64] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_long_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
+  }
+  sub mat-int64-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_long_view_vector($mv.view, $v.vector, $n1, $n2);
+  }
+  sub mat-int64-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_long_view_vector_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
+  }
+  method row-view(size_t $i where * < $!matrix.size1) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_long_row($vv.view, $!matrix, $i);
+  }
+  method col-view(size_t $j where * < $!matrix.size2) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_long_column($vv.view, $!matrix, $j);
+  }
+  method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_long_subrow($vv.view, $!matrix, $i, $offset, $n);
+  }
+  method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_long_subcolumn($vv.view, $!matrix, $j, $offset, $n);
+  }
+  method diagonal-view() {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_long_diagonal($vv.view, $!matrix);
+  }
+  method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_long_subdiagonal($vv.view, $!matrix, $k);
+  }
+  method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_long_superdiagonal($vv.view, $!matrix, $k);
+  }
   # Copying matrices
   method copy(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2) {
     my $ret = gsl_matrix_long_memcpy($!matrix, $src.matrix);
@@ -1341,60 +1342,60 @@ class UInt64 {
     self
   }
   # View
-  #method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
-  #    if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ulong_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
-  #}
-  #sub mat-view-array(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[uint64] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ulong_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
-  #}
-  #sub mat-view-array-tda(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[uint64] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ulong_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
-  #}
-  #sub mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ulong_view_vector_ulong($mv.view, $v.vector, $n1, $n2);
-  #}
-  #sub mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ulong_view_vector_ulong_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
-  #}
-  #method row-view(size_t $i where * < $!matrix.size1) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_row($vv.view, $!matrix, $i);
-  #}
-  #method col-view(size_t $j where * < $!matrix.size2) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_column($vv.view, $!matrix, $j);
-  #}
-  #method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_subrow($vv.view, $!matrix, $i, $offset, $n);
-  #}
-  #method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_subcolumn($vv.view, $!matrix, $j, $offset, $n);
-  #}
-  #method diagonal-view() {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_diagonal($vv.view, $!matrix);
-  #}
-  #method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_subdiagonal($vv.view, $!matrix, $k);
-  #}
-  #method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_superdiagonal($vv.view, $!matrix, $k);
-  #}
+  method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
+      if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ulong_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
+  }
+  sub mat-uint64-view-array(@array where { @array ~~ Array && @array.shape.elems == 2 }) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[uint64] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ulong_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
+  }
+  sub mat-uint64-view-array-tda(@array where { @array ~~ Array && @array.shape.elems == 2 }, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[uint64] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ulong_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
+  }
+  sub mat-uint64-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ulong_view_vector($mv.view, $v.vector, $n1, $n2);
+  }
+  sub mat-uint64-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ulong_view_vector_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
+  }
+  method row-view(size_t $i where * < $!matrix.size1) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_row($vv.view, $!matrix, $i);
+  }
+  method col-view(size_t $j where * < $!matrix.size2) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_column($vv.view, $!matrix, $j);
+  }
+  method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_subrow($vv.view, $!matrix, $i, $offset, $n);
+  }
+  method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_subcolumn($vv.view, $!matrix, $j, $offset, $n);
+  }
+  method diagonal-view() {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_diagonal($vv.view, $!matrix);
+  }
+  method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_subdiagonal($vv.view, $!matrix, $k);
+  }
+  method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ulong_superdiagonal($vv.view, $!matrix, $k);
+  }
   # Copying matrices
   method copy(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2) {
     my $ret = gsl_matrix_ulong_memcpy($!matrix, $src.matrix);
@@ -1596,60 +1597,60 @@ class Int16 {
     self
   }
   # View
-  #method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
-  #    if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_short_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
-  #}
-  #sub mat-view-array(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[int16] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_short_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
-  #}
-  #sub mat-view-array-tda(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[int16] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_short_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
-  #}
-  #sub mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_short_view_vector_short($mv.view, $v.vector, $n1, $n2);
-  #}
-  #sub mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_short_view_vector_short_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
-  #}
-  #method row-view(size_t $i where * < $!matrix.size1) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_short_row($vv.view, $!matrix, $i);
-  #}
-  #method col-view(size_t $j where * < $!matrix.size2) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_short_column($vv.view, $!matrix, $j);
-  #}
-  #method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_short_subrow($vv.view, $!matrix, $i, $offset, $n);
-  #}
-  #method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_short_subcolumn($vv.view, $!matrix, $j, $offset, $n);
-  #}
-  #method diagonal-view() {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_short_diagonal($vv.view, $!matrix);
-  #}
-  #method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_short_subdiagonal($vv.view, $!matrix, $k);
-  #}
-  #method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_short_superdiagonal($vv.view, $!matrix, $k);
-  #}
+  method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
+      if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_short_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
+  }
+  sub mat-int16-view-array(@array where { @array ~~ Array && @array.shape.elems == 2 }) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[int16] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_short_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
+  }
+  sub mat-int16-view-array-tda(@array where { @array ~~ Array && @array.shape.elems == 2 }, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[int16] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_short_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
+  }
+  sub mat-int16-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_short_view_vector($mv.view, $v.vector, $n1, $n2);
+  }
+  sub mat-int16-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_short_view_vector_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
+  }
+  method row-view(size_t $i where * < $!matrix.size1) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_short_row($vv.view, $!matrix, $i);
+  }
+  method col-view(size_t $j where * < $!matrix.size2) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_short_column($vv.view, $!matrix, $j);
+  }
+  method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_short_subrow($vv.view, $!matrix, $i, $offset, $n);
+  }
+  method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_short_subcolumn($vv.view, $!matrix, $j, $offset, $n);
+  }
+  method diagonal-view() {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_short_diagonal($vv.view, $!matrix);
+  }
+  method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_short_subdiagonal($vv.view, $!matrix, $k);
+  }
+  method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_short_superdiagonal($vv.view, $!matrix, $k);
+  }
   # Copying matrices
   method copy(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2) {
     my $ret = gsl_matrix_short_memcpy($!matrix, $src.matrix);
@@ -1851,60 +1852,60 @@ class UInt16 {
     self
   }
   # View
-  #method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
-  #    if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ushort_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
-  #}
-  #sub mat-view-array(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[uint16] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ushort_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
-  #}
-  #sub mat-view-array-tda(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[uint16] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ushort_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
-  #}
-  #sub mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ushort_view_vector_ushort($mv.view, $v.vector, $n1, $n2);
-  #}
-  #sub mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ushort_view_vector_ushort_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
-  #}
-  #method row-view(size_t $i where * < $!matrix.size1) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_row($vv.view, $!matrix, $i);
-  #}
-  #method col-view(size_t $j where * < $!matrix.size2) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_column($vv.view, $!matrix, $j);
-  #}
-  #method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_subrow($vv.view, $!matrix, $i, $offset, $n);
-  #}
-  #method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_subcolumn($vv.view, $!matrix, $j, $offset, $n);
-  #}
-  #method diagonal-view() {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_diagonal($vv.view, $!matrix);
-  #}
-  #method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_subdiagonal($vv.view, $!matrix, $k);
-  #}
-  #method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_superdiagonal($vv.view, $!matrix, $k);
-  #}
+  method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
+      if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ushort_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
+  }
+  sub mat-uint16-view-array(@array where { @array ~~ Array && @array.shape.elems == 2 }) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[uint16] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ushort_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
+  }
+  sub mat-uint16-view-array-tda(@array where { @array ~~ Array && @array.shape.elems == 2 }, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[uint16] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ushort_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
+  }
+  sub mat-uint16-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ushort_view_vector($mv.view, $v.vector, $n1, $n2);
+  }
+  sub mat-uint16-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_ushort_view_vector_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
+  }
+  method row-view(size_t $i where * < $!matrix.size1) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_row($vv.view, $!matrix, $i);
+  }
+  method col-view(size_t $j where * < $!matrix.size2) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_column($vv.view, $!matrix, $j);
+  }
+  method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_subrow($vv.view, $!matrix, $i, $offset, $n);
+  }
+  method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_subcolumn($vv.view, $!matrix, $j, $offset, $n);
+  }
+  method diagonal-view() {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_diagonal($vv.view, $!matrix);
+  }
+  method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_subdiagonal($vv.view, $!matrix, $k);
+  }
+  method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_ushort_superdiagonal($vv.view, $!matrix, $k);
+  }
   # Copying matrices
   method copy(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2) {
     my $ret = gsl_matrix_ushort_memcpy($!matrix, $src.matrix);
@@ -2106,60 +2107,60 @@ class Int8 {
     self
   }
   # View
-  #method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
-  #    if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_char_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
-  #}
-  #sub mat-view-array(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[int8] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_char_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
-  #}
-  #sub mat-view-array-tda(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[int8] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_char_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
-  #}
-  #sub mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_char_view_vector_char($mv.view, $v.vector, $n1, $n2);
-  #}
-  #sub mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_char_view_vector_char_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
-  #}
-  #method row-view(size_t $i where * < $!matrix.size1) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_char_row($vv.view, $!matrix, $i);
-  #}
-  #method col-view(size_t $j where * < $!matrix.size2) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_char_column($vv.view, $!matrix, $j);
-  #}
-  #method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_char_subrow($vv.view, $!matrix, $i, $offset, $n);
-  #}
-  #method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_char_subcolumn($vv.view, $!matrix, $j, $offset, $n);
-  #}
-  #method diagonal-view() {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_char_diagonal($vv.view, $!matrix);
-  #}
-  #method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_char_subdiagonal($vv.view, $!matrix, $k);
-  #}
-  #method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_char_superdiagonal($vv.view, $!matrix, $k);
-  #}
+  method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
+      if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_char_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
+  }
+  sub mat-int8-view-array(@array where { @array ~~ Array && @array.shape.elems == 2 }) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[int8] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_char_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
+  }
+  sub mat-int8-view-array-tda(@array where { @array ~~ Array && @array.shape.elems == 2 }, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[int8] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_char_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
+  }
+  sub mat-int8-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_char_view_vector($mv.view, $v.vector, $n1, $n2);
+  }
+  sub mat-int8-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_char_view_vector_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
+  }
+  method row-view(size_t $i where * < $!matrix.size1) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_char_row($vv.view, $!matrix, $i);
+  }
+  method col-view(size_t $j where * < $!matrix.size2) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_char_column($vv.view, $!matrix, $j);
+  }
+  method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_char_subrow($vv.view, $!matrix, $i, $offset, $n);
+  }
+  method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_char_subcolumn($vv.view, $!matrix, $j, $offset, $n);
+  }
+  method diagonal-view() {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_char_diagonal($vv.view, $!matrix);
+  }
+  method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_char_subdiagonal($vv.view, $!matrix, $k);
+  }
+  method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_char_superdiagonal($vv.view, $!matrix, $k);
+  }
   # Copying matrices
   method copy(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2) {
     my $ret = gsl_matrix_char_memcpy($!matrix, $src.matrix);
@@ -2361,60 +2362,60 @@ class UInt8 {
     self
   }
   # View
-  #method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
-  #    if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uchar_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
-  #}
-  #sub mat-view-array(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[uint8] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uchar_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
-  #}
-  #sub mat-view-array-tda(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[uint8] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uchar_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
-  #}
-  #sub mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uchar_view_vector_uchar($mv.view, $v.vector, $n1, $n2);
-  #}
-  #sub mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uchar_view_vector_uchar_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
-  #}
-  #method row-view(size_t $i where * < $!matrix.size1) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_row($vv.view, $!matrix, $i);
-  #}
-  #method col-view(size_t $j where * < $!matrix.size2) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_column($vv.view, $!matrix, $j);
-  #}
-  #method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_subrow($vv.view, $!matrix, $i, $offset, $n);
-  #}
-  #method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_subcolumn($vv.view, $!matrix, $j, $offset, $n);
-  #}
-  #method diagonal-view() {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_diagonal($vv.view, $!matrix);
-  #}
-  #method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_subdiagonal($vv.view, $!matrix, $k);
-  #}
-  #method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_superdiagonal($vv.view, $!matrix, $k);
-  #}
+  method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
+      if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uchar_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
+  }
+  sub mat-uint8-view-array(@array where { @array ~~ Array && @array.shape.elems == 2 }) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[uint8] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uchar_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
+  }
+  sub mat-uint8-view-array-tda(@array where { @array ~~ Array && @array.shape.elems == 2 }, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[uint8] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uchar_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
+  }
+  sub mat-uint8-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uchar_view_vector($mv.view, $v.vector, $n1, $n2);
+  }
+  sub mat-uint8-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_uchar_view_vector_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
+  }
+  method row-view(size_t $i where * < $!matrix.size1) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_row($vv.view, $!matrix, $i);
+  }
+  method col-view(size_t $j where * < $!matrix.size2) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_column($vv.view, $!matrix, $j);
+  }
+  method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_subrow($vv.view, $!matrix, $i, $offset, $n);
+  }
+  method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_subcolumn($vv.view, $!matrix, $j, $offset, $n);
+  }
+  method diagonal-view() {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_diagonal($vv.view, $!matrix);
+  }
+  method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_subdiagonal($vv.view, $!matrix, $k);
+  }
+  method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_uchar_superdiagonal($vv.view, $!matrix, $k);
+  }
   # Copying matrices
   method copy(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2) {
     my $ret = gsl_matrix_uchar_memcpy($!matrix, $src.matrix);
@@ -2622,60 +2623,60 @@ class Complex64 {
     self
   }
   # View
-  #method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
-  #    if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
-  #}
-  #sub mat-view-array(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[num64] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
-  #}
-  #sub mat-view-array-tda(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[num64] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
-  #}
-  #sub mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_view_vector_complex($mv.view, $v.vector, $n1, $n2);
-  #}
-  #sub mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_view_vector_complex_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
-  #}
-  #method row-view(size_t $i where * < $!matrix.size1) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_row($vv.view, $!matrix, $i);
-  #}
-  #method col-view(size_t $j where * < $!matrix.size2) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_column($vv.view, $!matrix, $j);
-  #}
-  #method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_subrow($vv.view, $!matrix, $i, $offset, $n);
-  #}
-  #method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_subcolumn($vv.view, $!matrix, $j, $offset, $n);
-  #}
-  #method diagonal-view() {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_diagonal($vv.view, $!matrix);
-  #}
-  #method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_subdiagonal($vv.view, $!matrix, $k);
-  #}
-  #method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_superdiagonal($vv.view, $!matrix, $k);
-  #}
+  method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
+      if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
+  }
+  sub mat-complex64-view-array(@array where { @array ~~ Array && @array.shape.elems == 2 }) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[num64] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
+  }
+  sub mat-complex64-view-array-tda(@array where { @array ~~ Array && @array.shape.elems == 2 }, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[num64] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
+  }
+  sub mat-complex64-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_view_vector($mv.view, $v.vector, $n1, $n2);
+  }
+  sub mat-complex64-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_view_vector_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
+  }
+  method row-view(size_t $i where * < $!matrix.size1) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_row($vv.view, $!matrix, $i);
+  }
+  method col-view(size_t $j where * < $!matrix.size2) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_column($vv.view, $!matrix, $j);
+  }
+  method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_subrow($vv.view, $!matrix, $i, $offset, $n);
+  }
+  method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_subcolumn($vv.view, $!matrix, $j, $offset, $n);
+  }
+  method diagonal-view() {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_diagonal($vv.view, $!matrix);
+  }
+  method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_subdiagonal($vv.view, $!matrix, $k);
+  }
+  method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_superdiagonal($vv.view, $!matrix, $k);
+  }
   # Copying matrices
   method copy(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2) {
     my $ret = gsl_matrix_complex_memcpy($!matrix, $src.matrix);
@@ -2885,60 +2886,60 @@ class Complex32 {
     self
   }
   # View
-  #method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
-  #    if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_float_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
-  #}
-  #sub mat-view-array(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[num32] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_float_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
-  #}
-  #sub mat-view-array-tda(@array where { @array ~~ Array && @array.shape[0] ~~ UInt }, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  my CArray[num32] $a .= new: @array.Array».Num;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_float_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
-  #}
-  #sub mat-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_float_view_vector_complex_float($mv.view, $v.vector, $n1, $n2);
-  #}
-  #sub mat-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
-  #  fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
-  #  my Math::Libgsl::Matrix::MView $mv .= new;
-  #  Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_float_view_vector_complex_float_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
-  #}
-  #method row-view(size_t $i where * < $!matrix.size1) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_row($vv.view, $!matrix, $i);
-  #}
-  #method col-view(size_t $j where * < $!matrix.size2) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_column($vv.view, $!matrix, $j);
-  #}
-  #method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_subrow($vv.view, $!matrix, $i, $offset, $n);
-  #}
-  #method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_subcolumn($vv.view, $!matrix, $j, $offset, $n);
-  #}
-  #method diagonal-view() {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_diagonal($vv.view, $!matrix);
-  #}
-  #method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_subdiagonal($vv.view, $!matrix, $k);
-  #}
-  #method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
-  #  my Math::Libgsl::Vector::VView $vv .= new;
-  #  Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_superdiagonal($vv.view, $!matrix, $k);
-  #}
+  method submatrix(size_t $k1 where * < $!matrix.size1, size_t $k2 where * < $!matrix.size2, size_t $n1, size_t $n2) {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "Submatrix indices out of bound"
+      if $k1 + $n1 > $!matrix.size1 || $k2 + $n2 > $!matrix.size2;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_float_submatrix($mv.view, $!matrix, $k1, $k2, $n1, $n2);
+  }
+  sub mat-complex32-view-array(@array where { @array ~~ Array && @array.shape.elems == 2 }) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[num32] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_float_view_array($mv.view, $a, @array.shape[0], @array.shape[1]);
+  }
+  sub mat-complex32-view-array-tda(@array where { @array ~~ Array && @array.shape.elems == 2 }, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $tda < @array.shape[1];
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    my CArray[num32] $a .= new: @array.Array».Num;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_float_view_array_with_tda($mv.view, $a, @array.shape[0], @array.shape[1], $tda);
+  }
+  sub mat-complex32-view-vector(Math::Libgsl::Vector $v, size_t $n1, size_t $n2) is export {
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_float_view_vector($mv.view, $v.vector, $n1, $n2);
+  }
+  sub mat-complex32-view-vector-tda(Math::Libgsl::Vector $v, size_t $n1, size_t $n2, size_t $tda) is export {
+    fail X::Libgsl.new: errno => GSL_EDOM, error => "tda out of bound" if $n2 > $tda ;
+    my Math::Libgsl::Matrix::MView $mv .= new;
+    Math::Libgsl::Matrix.new: matrix => mgsl_matrix_complex_float_view_vector_with_tda($mv.view, $v.vector, $n1, $n2, $tda);
+  }
+  method row-view(size_t $i where * < $!matrix.size1) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_row($vv.view, $!matrix, $i);
+  }
+  method col-view(size_t $j where * < $!matrix.size2) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_column($vv.view, $!matrix, $j);
+  }
+  method subrow-view(size_t $i where * < $!matrix.size1, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_subrow($vv.view, $!matrix, $i, $offset, $n);
+  }
+  method subcol-view(size_t $j where * < $!matrix.size2, size_t $offset, size_t $n) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_subcolumn($vv.view, $!matrix, $j, $offset, $n);
+  }
+  method diagonal-view() {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_diagonal($vv.view, $!matrix);
+  }
+  method subdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_subdiagonal($vv.view, $!matrix, $k);
+  }
+  method superdiagonal-view(size_t $k where * < min($!matrix.size1, $!matrix.size2)) {
+    my Math::Libgsl::Vector::VView $vv .= new;
+    Math::Libgsl::Vector.new: vector => mgsl_matrix_complex_float_superdiagonal($vv.view, $!matrix, $k);
+  }
   # Copying matrices
   method copy(Math::Libgsl::Matrix $src where $!matrix.size1 == .matrix.size1 && $!matrix.size2 == .matrix.size2) {
     my $ret = gsl_matrix_complex_float_memcpy($!matrix, $src.matrix);
