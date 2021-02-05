@@ -35,10 +35,7 @@ The modules available at the moment are the following:
 * [Math::Libgsl::MovingWindow](https://github.com/frithnanth/raku-Math-Libgsl-MovingWindow)
 * [Math::Libgsl::DigitalFiltering](https://github.com/frithnanth/raku-Math-Libgsl-DigitalFiltering)
 * [Math::Libgsl::Histogram](https://github.com/frithnanth/raku-Math-Libgsl-Histogram)
-
-I'm working on this one:
-
-Math::Libgsl::Interpolation
+* [Math::Libgsl::Interpolation](https://github.com/frithnanth/raku-Math-Libgsl-Interpolation)
 
 C Library Documentation
 =======================
